@@ -1,0 +1,119 @@
+nextflow_workflow {
+
+    name "Test Subworkflow FASTQ_ALIGN_MINIMAP2"
+    script "../main.nf"
+    workflow "FASTQ_ALIGN_MINIMAP2"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/fastq_align_minimap2"
+    tag "minimap2/align"
+    tag "samtools/fastq"
+
+    // The minimap_gpu (parabricks) branch is not tested: it needs a GPU runner and the parabricks
+    // container, and nf-test cannot exclude a 'gpu' tag from the CPU CI jobs.
+
+    // Reads come from a COLO829 ONT R10.4.1 Dorado sup BAM (chr22:24-25Mb) through samtools fastq -T MM,ML,
+    // as BAM_CONVERT_FASTQ_QC produces them, so minimap2 -y has the modification tags to carry into the alignments
+    setup {
+        run("SAMTOOLS_FASTQ") {
+            script "../../../../modules/nf-core/samtools/fastq/main.nf"
+            process {
+                """
+                input[0] = [
+                    [ id:'test_T', patient:'test', type:'tumour' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true)
+                ]
+                input[1] = false
+                """
+            }
+        }
+    }
+
+    test("homo_sapiens - ont - fastq - minimap_nogpu") {
+
+        when {
+            params {
+                alignment_software = 'minimap_nogpu'
+            }
+            workflow {
+                """
+                input[0] = SAMTOOLS_FASTQ.out.other
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            def sam_lines = bam(workflow.out.bam[0][1]).getSamLines()
+            assertAll(
+                { assert workflow.success },
+                { assert sam_lines.size() > 0 },
+                // modification tags from the Dorado BAM survive fastq conversion and alignment
+                { assert sam_lines.every { line -> line.contains('MM:Z:') && line.contains('ML:B:') } },
+                { assert snapshot(
+                    workflow.out.bam.collect { meta, bam_file -> [ meta, file(bam_file).name, bam(bam_file).getReadsMD5() ] },
+                    workflow.out.bai.collect { meta, bai -> [ meta, file(bai).name ] },
+                    workflow.out.versions
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - fastq - minimap_nogpu - stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                alignment_software = 'minimap_nogpu'
+            }
+            workflow {
+                """
+                input[0] = SAMTOOLS_FASTQ.out.other
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - fastq - unknown aligner") {
+
+        options "-stub"
+
+        when {
+            params {
+                alignment_software = 'bwa'
+            }
+            workflow {
+                """
+                input[0] = SAMTOOLS_FASTQ.out.other
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { line -> line.contains("Unknown --alignment_software 'bwa'") } }
+            )
+        }
+    }
+}

@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "bam_call_snv_clair3"
+description: Call SNVs and small indels from long-read alignments with Clair3, then
+  filter the calls with bcftools view (optional --regions, --targets and --sample_names).
+keywords:
+  - snv
+  - variant calling
+  - clair3
+  - bcftools
+  - long-read
+components:
+  - clair3
+  - bcftools/view
+input:
+  - ch_input:
+      type: file
+      description: |
+        Aligned reads with the Clair3 model to use. Provide either a packaged model name
+        (with user_model as []) or a user model directory (with packaged_model as []).
+        Structure: [ val(meta), path(bam), path(bai), val(packaged_model), path(user_model), val(platform) ]
+      pattern: "*.{bam,bai}"
+  - ch_fasta:
+      type: file
+      description: |
+        Reference genome
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fa,fasta}"
+  - ch_fai:
+      type: file
+      description: |
+        Reference genome index
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
+output:
+  - vcf:
+      type: file
+      description: |
+        Filtered SNV/indel calls
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.{vcf,vcf.gz,bcf,bcf.gz}"
+  - index:
+      type: file
+      description: |
+        Index of the filtered calls, when bcftools is asked to write one
+        Structure: [ val(meta), path(index) ]
+      pattern: "*.{tbi,csi}"
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

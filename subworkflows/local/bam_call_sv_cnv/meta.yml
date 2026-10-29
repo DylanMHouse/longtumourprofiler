@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "bam_call_sv_cnv"
+description: Call structural variants from long-read alignments with Sniffles, and
+  large copy number variants with Spectre from mosdepth binned coverage and SNV calls.
+keywords:
+  - structural variants
+  - cnv
+  - sniffles
+  - spectre
+  - long-read
+components:
+  - sniffles
+  - mosdepth
+  - spectre/cnvcaller
+input:
+  - ch_input:
+      type: file
+      description: |
+        Aligned reads
+        Structure: [ val(meta), path(bam), path(bai) ]
+      pattern: "*.{bam,bai}"
+  - ch_snv:
+      type: file
+      description: |
+        SNV calls for the same samples (e.g. from Clair3), used by Spectre
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.{vcf,vcf.gz}"
+  - ch_fasta:
+      type: file
+      description: |
+        Reference genome
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fa,fasta}"
+output:
+  - sv_vcf:
+      type: file
+      description: |
+        Sniffles SV calls
+        Structure: [ val(meta), path(vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - sv_tbi:
+      type: file
+      description: |
+        Index of the Sniffles SV calls
+        Structure: [ val(meta), path(vcf.gz.tbi) ]
+      pattern: "*.vcf.gz.tbi"
+  - cnv_vcf:
+      type: file
+      description: |
+        Spectre CNV calls
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*_cnv.vcf"
+  - cnv_bed:
+      type: file
+      description: |
+        Spectre CNV calls in BED format
+        Structure: [ val(meta), path(bed) ]
+      pattern: "*_cnv.bed"
+  - karyotype:
+      type: file
+      description: |
+        Spectre predicted sex chromosome karyotype
+        Structure: [ val(meta), path(txt) ]
+      pattern: "*_predicted_karyotype.txt"
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

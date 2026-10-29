@@ -1,0 +1,125 @@
+nextflow_workflow {
+
+    name "Test Subworkflow BAM_CONVERT_FASTQ_QC"
+    script "../main.nf"
+    workflow "BAM_CONVERT_FASTQ_QC"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/bam_convert_fastq_qc"
+    tag "samtools/cat"
+    tag "samtools/fastq"
+    tag "fastqc"
+    tag "nanoplot"
+
+    // COLO829 (tumour) and COLO829BL (matched normal) ONT R10.4.1 Dorado sup BAMs with MM/ML tags, chr22:24-25Mb
+
+    test("homo_sapiens - ont - bam - tumour, germline - qc") {
+
+        when {
+            params {
+                qc = true
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        [ file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true) ]
+                    ],
+                    [
+                        [ id:'test_N', patient:'test', type:'germline' ],
+                        [ file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam', checkIfExists: true) ]
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            def by_id = { entries -> entries.sort { entry -> entry[0].id } }
+            assertAll(
+                { assert workflow.success },
+                // samtools fastq -T MM,ML keeps the modification tags in the read comments
+                { assert workflow.out.fastq.every { meta, fastq -> path(fastq).linesGzip[0].contains('MM:Z:') } },
+                { assert workflow.out.png.every { meta, pngs -> pngs.size() > 0 } },
+                { assert snapshot(
+                    by_id(workflow.out.fastq.collect { meta, fastq -> [ meta, file(fastq).name, path(fastq).linesGzip.size() / 4 ] }),
+                    by_id(workflow.out.txt.collect { meta, txt -> [ meta, file(txt).name ] }),
+                    by_id(workflow.out.zip.collect { meta, zip -> [ meta, file(zip).name ] })
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - bam - multiple bams per sample - no qc") {
+
+        when {
+            params {
+                qc = false
+            }
+            workflow {
+                """
+                input[0] = [
+                    [ id:'test_T', patient:'test', type:'tumour' ],
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam', checkIfExists: true)
+                    ]
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.png.size() == 0 },
+                { assert workflow.out.txt.size() == 0 },
+                { assert workflow.out.zip.size() == 0 },
+                // both BAMs are concatenated into one fastq
+                { assert snapshot(
+                    workflow.out.fastq.collect { meta, fastq -> [ meta, file(fastq).name, path(fastq).linesGzip.size() / 4 ] }
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - bam - tumour, germline - qc - stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                qc = true
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        [ file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true) ]
+                    ],
+                    [
+                        [ id:'test_N', patient:'test', type:'germline' ],
+                        [ file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam', checkIfExists: true) ]
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            def by_id = { entries -> entries.sort { entry -> entry[0].id } }
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    by_id(workflow.out.fastq),
+                    by_id(workflow.out.png),
+                    by_id(workflow.out.txt),
+                    by_id(workflow.out.zip)
+                ).match() }
+            )
+        }
+    }
+}

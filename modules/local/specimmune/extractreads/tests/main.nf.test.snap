@@ -1,0 +1,96 @@
+{
+    "homo_sapiens - ont - bam, IG_TR": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "IG_TR",
+                    "test.IG_TR.fastq.gz",
+                    680
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "IG_TR",
+                    "test.IG_TR.bam",
+                    "a86b8f5f6464f448abd65aa8c08af36e"
+                ]
+            ],
+            {
+                "versions_samtools": [
+                    [
+                        "SPECIMMUNE_EXTRACTREADS",
+                        "samtools",
+                        "1.21"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-27T19:59:44.294473649",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.3"
+        }
+    },
+    "homo_sapiens - ont - bam, IG_TR - stub": {
+        "content": [
+            {
+                "bam": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "IG_TR",
+                        "test.IG_TR.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastq": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "IG_TR",
+                        "test.IG_TR.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "versions_samtools": [
+                    [
+                        "SPECIMMUNE_EXTRACTREADS",
+                        "samtools",
+                        "1.21"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T22:57:20.890869254",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - pacbio - bam, HLA": {
+        "content": [
+            [
+                
+            ],
+            [
+                
+            ],
+            {
+                "versions_samtools": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T22:57:03.82365558",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    }
+}

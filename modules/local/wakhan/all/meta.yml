@@ -1,0 +1,232 @@
+name: "wakhan_all"
+description: Haplotype-specific somatic copy number aberration calling from long-read tumour/normal data with Wakhan
+keywords:
+  - copy number
+  - cna
+  - somatic
+  - long-read
+  - haplotype
+  - genomics
+tools:
+  - "wakhan":
+      description: "A tool to analyze haplotype-specific chromosome-scale somatic copy number aberrations and aneuploidy using long reads."
+      homepage: "https://github.com/KolmogorovLab/Wakhan"
+      documentation: "https://github.com/KolmogorovLab/Wakhan"
+      tool_dev_url: "https://github.com/KolmogorovLab/Wakhan"
+      doi: "10.64898/2025.12.11.25342098"
+      licence: ["MIT"]
+      identifier: ""
+      args_id: "$args"
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - tumour_bam:
+        type: file
+        description: Sorted tumour BAM file
+        pattern: "*.bam"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+    - tumour_bai:
+        type: file
+        description: Index of the tumour BAM file
+        pattern: "*.bai"
+        ontologies:
+          - edam: "http://edamontology.org/format_3327" # BAI
+    - normal_vcf:
+        type: file
+        description: Phased small variant VCF from the matched normal (tumour-normal mode). Provide either this or tumour_vcf, not both.
+        pattern: "*.vcf.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+    - tumour_vcf:
+        type: file
+        description: Phased small variant VCF from the tumour (tumour-only mode). Provide either this or normal_vcf, not both.
+        pattern: "*.vcf.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+    - breakpoints:
+        type: file
+        description: Somatic structural variant VCF (e.g. from Severus) used for segmentation. Required, wakhan 0.5.0 fails without it
+        pattern: "*.vcf{,.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing reference information
+          e.g. `[ id:'genome' ]`
+    - fasta:
+        type: file
+        description: Reference genome FASTA file
+        pattern: "*.{fa,fasta,fna}"
+        ontologies:
+          - edam: "http://edamontology.org/format_1929" # FASTA
+    - fai:
+        type: file
+        description: Index of the reference FASTA file
+        pattern: "*.fai"
+        ontologies: [] # No EDAM term
+  - - meta3:
+        type: map
+        description: |
+          Groovy Map containing cancer gene information
+          e.g. `[ id:'genes' ]`
+    - cancer_genes:
+        type: file
+        description: Optional TSV of cancer genes to annotate; defaults to the COSMIC list bundled with Wakhan
+        pattern: "*.tsv"
+        ontologies:
+          - edam: "http://edamontology.org/format_3475" # TSV
+  - - meta4:
+        type: map
+        description: |
+          Groovy Map containing centromere information
+          e.g. `[ id:'centromere' ]`
+    - centromere_bed:
+        type: file
+        description: Optional BED of centromeric regions; the bundled default is GRCh38 with chr-prefixed contigs
+        pattern: "*.bed"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003" # BED
+
+output:
+  outdir:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}:
+          type: directory
+          description: Full Wakhan output directory including plots, coverage data and all candidate solutions
+  ranks:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/solutions_ranks.tsv:
+          type: file
+          description: Ranking of candidate ploidy/purity solutions
+          pattern: "solutions_ranks.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  bed:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/solution_rank_1/integer_profile.bed:
+          type: file
+          description: Haplotype-specific integer copy number segments for the top ranked solution
+          pattern: "integer_profile.bed"
+          ontologies:
+            - edam: "http://edamontology.org/format_3003" # BED
+  vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/solution_rank_1/integer_profile.vcf:
+          type: file
+          description: Integer copy number segments for the top ranked solution in VCF format
+          pattern: "integer_profile.vcf"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+  genes:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/solution_rank_1/genes/genes_copynumber_states.bed:
+          type: file
+          description: Copy number states of cancer genes for the top ranked solution
+          pattern: "genes_copynumber_states.bed"
+          ontologies:
+            - edam: "http://edamontology.org/format_3003" # BED
+  hiscanner:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/solution_rank_1/HiScanner_plots_data.zip:
+          type: file
+          description: HiScanner plot data archive for the top ranked solution
+          pattern: "HiScanner_plots_data.zip"
+          ontologies:
+            - edam: "http://edamontology.org/format_3987" # ZIP
+  rephased_vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/phasing_output/rephased.vcf.gz:
+          type: file
+          description: Optional phased VCF after phase switch correction, only written when phase switches are found
+          pattern: "rephased.vcf.gz"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+      - ${prefix}/phasing_output/rephased.vcf.gz.csi:
+          type: file
+          description: Optional index of the rephased VCF
+          pattern: "rephased.vcf.gz.csi"
+          ontologies: []
+  versions_wakhan:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "wakhan":
+          type: string
+          description: The name of the tool
+      - "wakhan --version | sed 's/^wakhan //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - wakhan:
+          type: string
+          description: The name of the tool
+      - wakhan --version | sed 's/^wakhan //':
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/wakhan:0.5.0--d3e82994c22358cf
+      build_id: bd-d3e82994c22358cf_1
+      scan_id: sc-7ef0b4a2fc45085f_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/wakhan:0.5.0--6fc755c715dbafb7
+      build_id: bd-6fc755c715dbafb7_1
+      scan_id: sc-19f6239d9dc40084_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/wakhan:0.5.0--0f42241ce0188dfb
+      build_id: bd-0f42241ce0188dfb_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/21/21575f17544aed81bcea4f3da16ffbbe58d962a50430b3142a73daf8fbab4941/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/wakhan:0.5.0--e33782783944e61e
+      build_id: bd-e33782783944e61e_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/be/bec82f193eff7cecc8994a0e967a66ebfa1ffd44a5bdc0bcfb7f74ea3ccb3444/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/wakhan/all/.conda-lock/linux_amd64-bd-6fc755c715dbafb7_1.txt
+    linux/arm64:
+      lock_file: modules/local/wakhan/all/.conda-lock/linux_arm64-bd-d3e82994c22358cf_1.txt

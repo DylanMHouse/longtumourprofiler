@@ -1,0 +1,82 @@
+nextflow_process {
+
+    name "Test Process WAKHAN_ALL"
+    script "../main.nf"
+    process "WAKHAN_ALL"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "wakhan"
+    tag "wakhan/all"
+
+    test("homo_sapiens - [ bam, bai, normal_vcf, breakpoints ] - fasta - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/vcf/NA12878_GIAB.chr22.vcf.gz', checkIfExists: true),
+                    [],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/vcf/savana/sv_breakpoints.vcf', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'genome' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta.fai', checkIfExists: true)
+                ]
+                input[2] = [[:], []]
+                input[3] = [[:], []]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+
+    }
+
+    test("homo_sapiens - [ bam, bai, tumour_vcf, breakpoints ] - fasta - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                    [],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/vcf/NA12878_GIAB.chr22.vcf.gz', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/vcf/savana/sv_breakpoints.vcf', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'genome' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta.fai', checkIfExists: true)
+                ]
+                input[2] = [[:], []]
+                input[3] = [[:], []]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+
+    }
+
+}

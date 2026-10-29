@@ -1,0 +1,114 @@
+nextflow_workflow {
+
+    name "Test Subworkflow BAM_CALL_SNV_CLAIR3"
+    script "../main.nf"
+    workflow "BAM_CALL_SNV_CLAIR3"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/bam_call_snv_clair3"
+    tag "clair3"
+    tag "bcftools/view"
+
+    // COLO829 (tumour) and COLO829BL (matched normal) ONT R10.4.1 Dorado sup BAMs, chr22:24-25Mb.
+    // Both samples run together so each VCF must be paired with its own index before bcftools view.
+
+    test("homo_sapiens - ont - bam - tumour, germline - packaged model") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                        'r1041_e82_400bps_sup_v500',
+                        [],
+                        'ont'
+                    ],
+                    [
+                        [ id:'test_N', patient:'test', type:'germline' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                        'r1041_e82_400bps_sup_v500',
+                        [],
+                        'ont'
+                    ]
+                )
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                input[2] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            def by_id = { entries -> entries.sort { entry -> entry[0].id } }
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.vcf.size() == 2 },
+                // each sample keeps its own calls rather than another sample's VCF
+                { assert workflow.out.vcf.collect { meta, vcf -> path(vcf).vcf.variantsMD5 }.unique().size() == 2 },
+                { assert snapshot(
+                    by_id(workflow.out.vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] }),
+                    workflow.out.index
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - bam - tumour, germline - packaged model - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                        'r1041_e82_400bps_sup_v500',
+                        [],
+                        'ont'
+                    ],
+                    [
+                        [ id:'test_N', patient:'test', type:'germline' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829bl.PAU59807.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                        'r1041_e82_400bps_sup_v500',
+                        [],
+                        'ont'
+                    ]
+                )
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                input[2] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            def by_id = { entries -> entries.sort { entry -> entry[0].id } }
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    by_id(workflow.out.vcf),
+                    workflow.out.index
+                ).match() }
+            )
+        }
+    }
+}

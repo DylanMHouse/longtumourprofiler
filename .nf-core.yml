@@ -1,0 +1,16 @@
+lint:
+  template_strings:
+    - tests/data/specimmune/test_HLA_lite.hg38.chr6.bam
+nf_core_version: 4.2.0
+repository_type: pipeline
+template:
+  author: Dylan House
+  description: A TN-subtraction workflow of long-read WGS ONT sequencing data that
+    produces a comprehensive molecular tumour profile pdf report of various metrics.
+  force: false
+  is_nfcore: true
+  name: longtumourprofiler
+  org: nf-core
+  outdir: .
+  skip_features: []
+  version: 1.0.0dev

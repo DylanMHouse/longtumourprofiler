@@ -1,0 +1,302 @@
+{
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ metadata ], [ ]": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,93c3bf2bc10804eba590a935aa915ac1"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,2f6fe24a820af1ff33b0f22694bf4f6c"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,32224332ae83450e1c487f40d102b90c"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-ed69rvua because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:10:26.880779474",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ ], [ blacklist ] -stub": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-mh0d2hvd because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:11:55.465950566",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ metadata ], [ ] -stub": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-4if5dk5l because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:11:39.256019094",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ ], [ blacklist ]": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,214279597b5090bbbdca772fbae00a02"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,fa2ad68c1c4cbd8fffd7b349be6b5632"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,09e5626f976d807b6fd4f263b74dc3ca"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-tczbv0e1 because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:11:05.61328863",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ metadata ], [ blacklist ]": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,214279597b5090bbbdca772fbae00a02"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,3fff1021ad58bc398ec5b15d8e722289"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,6c13853200255b59f515c1072c7e2ae4"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-42unlc4f because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:09:39.729955566",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ Mosdepth_Summary, Mosdepth_Regions, Regions_csi, Sniffles_VCF ], [ fasta ], [ metadata ], [ blacklist ] - stub": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "karyotype": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_predicted_karyotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "spc": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre.spc.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_spectre_cnv.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_spectre": [
+                    [
+                        "SPECTRE_CNVCALLER",
+                        "spectre",
+                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-20b7xnfh because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-28T23:11:22.390449293",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    }
+}

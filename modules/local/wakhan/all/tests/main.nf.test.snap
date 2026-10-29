@@ -1,0 +1,231 @@
+{
+    "homo_sapiens - [ bam, bai, tumour_vcf, breakpoints ] - fasta - stub": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "genes": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "hiscanner": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c"
+                    ]
+                ],
+                "outdir": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "COPY_NUMBERS.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            [
+                                "baf.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "cancer_genes_coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "coverage_ps.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "phase_corrected_coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "test_loh_segments.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "COVERAGE_INDEX.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "PHASE_CORRECTION_INDEX.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "rephased.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                                "rephased.vcf.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "SNPs_LOH_INDEX.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c",
+                                [
+                                    "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                                ],
+                                "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c",
+                                [
+                                    "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                                ],
+                                "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "solutions_ranks.tsv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "test_genome_coverage.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "ranks": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "solutions_ranks.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "rephased_vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "rephased.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "rephased.vcf.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_wakhan": [
+                    [
+                        "WAKHAN_ALL",
+                        "wakhan",
+                        "0.5.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-29T14:40:43.326101353",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - [ bam, bai, normal_vcf, breakpoints ] - fasta - stub": {
+        "content": [
+            {
+                "bed": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "genes": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "hiscanner": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c"
+                    ]
+                ],
+                "outdir": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "COPY_NUMBERS.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            [
+                                "baf.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "cancer_genes_coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "coverage_ps.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "phase_corrected_coverage.csv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "pileup_SNPs.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "COVERAGE_INDEX.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "PHASE_CORRECTION_INDEX.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "rephased.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                                "rephased.vcf.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c",
+                                [
+                                    "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                                ],
+                                "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            [
+                                "HiScanner_plots_data.zip:md5,76cdb2bad9582d23c1f6f4d868218d6c",
+                                [
+                                    "genes_copynumber_states.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+                                ],
+                                "integer_profile.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                                "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "solutions_ranks.tsv:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "test_genome_coverage.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "ranks": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "solutions_ranks.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "rephased_vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "rephased.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "rephased.vcf.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "integer_profile.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_wakhan": [
+                    [
+                        "WAKHAN_ALL",
+                        "wakhan",
+                        "0.5.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-29T14:40:34.423447894",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    }
+}

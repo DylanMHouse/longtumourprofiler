@@ -1,0 +1,177 @@
+nextflow_workflow {
+
+    name "Test Subworkflow BAM_PHASE_HAPLOTAG_LONGPHASE"
+    script "../main.nf"
+    workflow "BAM_PHASE_HAPLOTAG_LONGPHASE"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/bam_phase_haplotag_longphase"
+    tag "longphase/modcall"
+    tag "longphase/phase"
+    tag "longphase/haplotag"
+    tag "samtools/index"
+    tag "clair3"
+    tag "sniffles"
+
+    // COLO829 ONT R10.4.1 Dorado sup BAM (5mCG_5hmCG MM/ML tags), chr22:24-25Mb, with its Clair3 SNVs and Sniffles SVs
+    setup {
+        run("CLAIR3") {
+            script "../../../../modules/nf-core/clair3/main.nf"
+            process {
+                """
+                input[0] = [
+                    [ id:'test_T', patient:'test', type:'tumour' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                    'r1041_e82_400bps_sup_v500',
+                    [],
+                    'ont'
+                ]
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                input[2] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+        run("SNIFFLES") {
+            script "../../../../modules/nf-core/sniffles/main.nf"
+            process {
+                """
+                input[0] = [
+                    [ id:'test_T', patient:'test', type:'tumour' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true),
+                    []
+                ]
+                input[1] = [
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ]
+                input[2] = [ [:], [] ]
+                input[3] = true
+                input[4] = false
+                """
+            }
+        }
+    }
+
+    test("homo_sapiens - ont - bam, snvs, svs") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true)
+                    ])
+                    .join(CLAIR3.out.vcf)
+                    .join(SNIFFLES.out.vcf)
+                input[1] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ])
+                input[2] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            def tagged = bam(workflow.out.bam[0][1]).getSamLines().findAll { line -> line.contains('HP:i:') && line.contains('PS:i:') }
+            assertAll(
+                { assert workflow.success },
+                { assert tagged.size() > 0 },
+                { assert workflow.out.sv_vcf.size() == 1 },
+                { assert snapshot(
+                    workflow.out.bam.collect { meta, bam_file -> [ meta, file(bam_file).name, bam(bam_file).getSamLinesMD5() ] },
+                    tagged.size(),
+                    workflow.out.snv_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] },
+                    workflow.out.sv_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] },
+                    workflow.out.mod_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] },
+                    workflow.out.modcall_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] }
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - bam, snvs, no svs") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true)
+                    ])
+                    .join(CLAIR3.out.vcf)
+                    .map { meta, bam, bai, snvs -> [ meta, bam, bai, snvs, [] ] }
+                input[1] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ])
+                input[2] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                // haplotag still runs when phase emits no SV VCF
+                { assert workflow.out.sv_vcf.size() == 0 },
+                { assert workflow.out.bam.size() == 1 },
+                { assert snapshot(
+                    workflow.out.snv_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] },
+                    workflow.out.mod_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] }
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - ont - bam, snvs, svs - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                        [ id:'test_T', patient:'test', type:'tumour' ],
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true)
+                    ])
+                    .join(CLAIR3.out.vcf)
+                    .join(SNIFFLES.out.vcf)
+                input[1] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta', checkIfExists: true)
+                ])
+                input[2] = Channel.value([
+                    [ id:'hg38_chr22' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
+}

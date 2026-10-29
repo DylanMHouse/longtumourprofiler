@@ -1,0 +1,407 @@
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+include { FASTQC } from '../modules/nf-core/fastqc/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap } from 'plugin/nf-schema'
+
+include { MOSDEPTH } from '../modules/nf-core/mosdepth/main'
+include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools'
+
+include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
+include { FASTQ_ALIGN_MINIMAP2 } from '../subworkflows/local/fastq_align_minimap2'
+include { BAM_CONVERT_FASTQ_QC } from '../subworkflows/local/bam_convert_fastq_qc'
+include { BAM_CALL_SNV_CLAIR3 } from '../subworkflows/local/bam_call_snv_clair3'
+include { BAM_CALL_SV_CNV } from '../subworkflows/local/bam_call_sv_cnv'
+include { BAM_PHASE_HAPLOTAG_LONGPHASE } from '../subworkflows/local/bam_phase_haplotag_longphase'
+include { BAM_TYPE_IMMUNE_SPECIMMUNE } from '../subworkflows/local/bam_type_immune_specimmune'
+include { CNVPYTOR } from '../modules/local/cnvpytor/main'
+include { STRDUST } from '../modules/nf-core/strdust/main'
+include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
+include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
+
+
+include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RUN MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+workflow LONGTUMOURPROFILER {
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+    multiqc_config
+    multiqc_logo
+    multiqc_methods_description
+    outdir
+
+    main:
+
+
+
+    def ch_versions = channel.empty()
+    def ch_multiqc_files = channel.empty()
+    def ch_multiqc_report = channel.empty()
+    def ch_aligned = channel.empty()
+    def ch_aligned_index = channel.empty()
+
+    //
+    // Collate and save software versions
+    //
+    def topic_versions = channel.topic("versions")
+        .distinct()
+        .branch { entry ->
+            versions_file: entry instanceof Path
+            versions_tuple: true
+        }
+
+    def topic_versions_string = topic_versions.versions_tuple
+        .map { process, tool, version ->
+            [process[process.lastIndexOf(':') + 1..-1], "  ${tool}: ${version}"]
+        }
+        .groupTuple(by: 0)
+        .map { process, tool_versions ->
+            tool_versions.unique().sort()
+            "${process}:\n${tool_versions.join('\n')}"
+        }
+
+    def ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+        .mix(topic_versions_string)
+        .collectFile(
+            storeDir: "${outdir}/pipeline_info",
+            name: 'nf_core_' + 'longtumourprofiler_software_' + 'mqc_' + 'versions.yml',
+            sort: true,
+            newLine: true,
+        )
+
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    REFERENCES & OPTIONAL INPUT CONFIGURATION
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // --fasta takes priority over --genome if provided of course.
+    def fasta_path = params.fasta ?: params.genome
+        ? params.genomes.containsKey(params.genome)
+            ? params.genomes[params.genome].fasta
+            : error("Genome '${params.genome}' not found in iGenomes config. Check --genome or set --igenomes_ignore false")
+        : error("Provide a reference with --fasta or --genome")
+
+    def ch_fasta = channel.fromPath(fasta_path, checkIfExists: true)
+        .map { fasta -> tuple([id: "ref"], fasta) }
+        .first()
+
+    // Indexing the reference to .fai is necessary here as it is mandatory for some steps.
+    SAMTOOLS_FAIDX(ch_fasta.map { meta, fasta -> [meta, fasta, []] }, false)
+    def ch_fasta_fai = ch_fasta
+        .join(SAMTOOLS_FAIDX.out.fai, by: 0)
+        .first()
+
+    // Optional inputs: an empty list stands in for a missing file.
+    def ch_intervals = params.intervals
+        ? channel.fromPath(params.intervals, checkIfExists: true).first()
+        : channel.value([])
+
+    // minimap2 accepts a prebuilt .mmi in place of the fasta; parabricks always needs the fasta
+    def ch_minimap2_ref = params.minimap2_index && params.alignment_software == 'minimap_nogpu'
+        ? channel.fromPath(params.minimap2_index, checkIfExists: true).map { mmi -> tuple([id: "ref"], mmi) }.first()
+        : ch_fasta
+
+
+    // Clair3 model: a packaged model name (in the container) OR a user model directory, not both
+    if (params.clair3) {
+        if (params.clair3_model && params.clair3_home_model) {
+            error("Use either --clair3_model (packaged model name) or --clair3_home_model (model directory), not both")
+        }
+        if (!params.clair3_model && !params.clair3_home_model) {
+            error("Clair3 needs a model: set --clair3_model or --clair3_home_model")
+        }
+    }
+    // channel: [ packaged_model, user_model, platform ]
+    def ch_clair3_model = params.clair3_home_model
+        ? channel.fromPath(params.clair3_home_model, type: 'dir', checkIfExists: true).map { model_dir -> [[], model_dir, 'ont'] }.first()
+        : channel.value([params.clair3_model, [], 'ont'])
+
+    // SpecImmune: typing runs on the haplotagged BAM, so it needs --phasing
+    def specimmune_genes = params.specimmune_genes.tokenize(',')*.trim()
+    if (params.specimmune) {
+        if (!params.phasing) {
+            error("--specimmune types reads from the haplotagged BAM, so it needs --phasing")
+        }
+        if (!params.specimmune_db) {
+            error("--specimmune needs --specimmune_db, the folder built by SpecImmune's make_db.py")
+        }
+        def unknown_genes = specimmune_genes - ['HLA', 'KIR', 'CYP', 'IG_TR']
+        if (unknown_genes) {
+            error("--specimmune_genes takes HLA, KIR, CYP and IG_TR, not: ${unknown_genes.join(', ')}")
+        }
+        if (specimmune_genes.intersect(['CYP', 'IG_TR']) && !params.specimmune_hg38) {
+            error("CYP and IG_TR typing need --specimmune_hg38, a no-alt hg38 fasta (bwa-indexed, with .fai)")
+        }
+    }
+
+    def ch_specimmune_db = params.specimmune_db
+        ? channel.fromPath(params.specimmune_db, type: 'dir', checkIfExists: true).first()
+        : channel.value([])
+
+    // Stage the fasta with its .fai and bwa index files, otherwise SpecImmune rebuilds the index in every task
+    def ch_specimmune_hg38 = params.specimmune_hg38
+        ? channel.value(['', '.fai', '.amb', '.ann', '.bwt', '.pac', '.sa'].collect { suffix -> file("${params.specimmune_hg38}${suffix}", checkIfExists: true) })
+        : channel.value([])
+
+    // STRdust optional BED file of STR regions; the module takes [ meta, bed ]
+    def ch_str_bed = params.strbed
+        ? channel.fromPath(params.strbed, checkIfExists: true).map { bed -> tuple([id: "strbed"], bed) }.first()
+        : channel.value([[:], []])
+
+    def ch_methyl_bed = params.methylbed
+        ? channel.fromPath(params.methylbed, checkIfExists: true).map { bed -> tuple([id: "methylbed"], bed) }.first()
+        : channel.value([[:], []])
+
+    def ch_spectre_metadata = params.spectre_metadata
+        ? channel.fromPath(params.spectre_metadata, checkIfExists: true).first()
+        : channel.value([])
+
+    def ch_spectre_blacklist = params.spectre_blacklist
+        ? channel.fromPath(params.spectre_blacklist, checkIfExists: true).first()
+        : channel.value([])
+
+    // CPSR needs the PCGR reference bundle and a VEP cache
+    if (params.cpsr && !(params.cpsr_refdata && params.cpsr_vep_cache)) {
+        error("--cpsr needs --cpsr_refdata (PCGR reference data) and --cpsr_vep_cache (VEP cache directory)")
+    }
+
+
+
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    READ QC
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.qc && params.input_type == 'fastq') {
+        FASTQC(ch_samplesheet)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map { _meta, file -> file })
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    INDEXING,  ALIGNMENT & QC CHECKS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.minimap2) {
+
+        if (params.input_type == 'fastq') {
+
+            FASTQ_ALIGN_MINIMAP2(ch_samplesheet, ch_minimap2_ref)
+        }
+        else if (params.input_type == 'bam') {
+            BAM_CONVERT_FASTQ_QC(ch_samplesheet)
+            ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.zip.map { _meta, file -> file })
+            ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.txt.map { _meta, file -> file })
+
+            FASTQ_ALIGN_MINIMAP2(BAM_CONVERT_FASTQ_QC.out.fastq, ch_minimap2_ref)
+        }
+
+        // Keep the full meta (id, patient, type) so tumour and germline can be told apart downstream. I've had this issue in previous commits :(
+        ch_aligned = FASTQ_ALIGN_MINIMAP2.out.bam
+        ch_aligned_index = FASTQ_ALIGN_MINIMAP2.out.bai
+
+        ch_input_bam = ch_aligned.join(ch_aligned_index, by: 0)
+
+        // Generate some statistics of aligned reads
+        BAM_STATS_SAMTOOLS(
+            ch_input_bam,
+            ch_fasta_fai,
+        )
+        ch_multiqc_files = ch_multiqc_files
+            .mix(BAM_STATS_SAMTOOLS.out.stats.map { _meta, file -> file })
+            .mix(BAM_STATS_SAMTOOLS.out.flagstat.map { _meta, file -> file })
+            .mix(BAM_STATS_SAMTOOLS.out.idxstats.map { _meta, file -> file })
+
+        /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        COVERAGE
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         */
+
+        if (params.coverage) {
+            MOSDEPTH(
+                // wrap the bed so an empty [] still fills the bed slot: [ meta, bam, bai, bed ]
+                ch_input_bam.combine(ch_intervals.map { bed -> [bed] }),
+                ch_fasta,
+                [],
+            )
+            ch_multiqc_files = ch_multiqc_files
+                .mix(MOSDEPTH.out.global_txt.map { _meta, file -> file })
+                .mix(MOSDEPTH.out.summary_txt.map { _meta, file -> file })
+        }
+    }
+
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SNV calls
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    BAM_CALL_SNV_CLAIR3(
+        ch_input_bam.combine(ch_clair3_model),
+        ch_fasta,
+        SAMTOOLS_FAIDX.out.fai.first(),
+    )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    GERMLINE VARIANT REPORTING WITH CPSR
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // CPSR reports cancer predisposition variants, so it only takes the germline calls
+    if (params.cpsr) {
+        VCF_REPORT_CPSR(
+            BAM_CALL_SNV_CLAIR3.out.vcf.filter { meta, _vcf -> meta.type == 'germline' },
+            channel.fromPath(params.cpsr_refdata, type: 'dir', checkIfExists: true).first(),
+            channel.fromPath(params.cpsr_vep_cache, type: 'dir', checkIfExists: true).first(),
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SV & CNV CALLS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    //Spectre uses the filtered Clair3 SNVs of the same sample to estimate diploid coverage
+    BAM_CALL_SV_CNV(
+        ch_input_bam,
+        BAM_CALL_SNV_CLAIR3.out.vcf,
+        ch_fasta,
+        ch_spectre_metadata,
+        ch_spectre_blacklist,
+    )
+
+    // CNVpytor calls read depth CNVs at a finer bin size than Spectre's >100kb calls
+    if (params.cnvpytor) {
+        CNVPYTOR(
+            ch_input_bam,
+            ch_fasta,
+            params.cnvpytor_bin_size,
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PHASING & HAPLOTAGGING
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.phasing) {
+        // Co-phase each samples'SNVS, Sniffles SVs and 5mC calls.
+        def ch_phase_input = ch_input_bam
+            .join(BAM_CALL_SNV_CLAIR3.out.vcf, by: 0)
+            .join(BAM_CALL_SV_CNV.out.sv_vcf, by: 0)
+
+        BAM_PHASE_HAPLOTAG_LONGPHASE(
+            ch_phase_input,
+            ch_fasta,
+            SAMTOOLS_FAIDX.out.fai.first(),
+        )
+
+        /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMMUNE GENE TYPING
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         */
+
+        if (params.specimmune) {
+            BAM_TYPE_IMMUNE_SPECIMMUNE(
+                BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0),
+                ch_fasta,
+                channel.fromList(specimmune_genes),
+                ch_specimmune_db,
+                ch_specimmune_hg38,
+            )
+        }
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    METHYLATION CALLS WITH MODKIT_PILEUP
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // Reads keep their MM/ML tags through SAMTOOLS_FASTQ (-T MM,ML) and minimap2 (-y)
+    if (params.methyl) {
+        MODKIT_PILEUP(
+            ch_input_bam,
+            ch_fasta_fai,
+            ch_methyl_bed,
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    STR ANALYSIS with STRDust
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.strdust) {
+        STRDUST(
+            ch_input_bam,
+            ch_fasta,
+            SAMTOOLS_FAIDX.out.fai.first(),
+            ch_str_bed,
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MULTIQC
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+    def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    def ch_multiqc_custom_methods_description = multiqc_methods_description
+        ? file(multiqc_methods_description, checkIfExists: true)
+        : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
+    def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
+
+    MULTIQC(
+        ch_multiqc_files.flatten().collect().map { files ->
+            [
+                [id: 'longtumourprofiler'],
+                files,
+                multiqc_config
+                    ? file(multiqc_config, checkIfExists: true)
+                    : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
+                multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
+                [],
+                [],
+            ]
+        }
+    )
+    ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> report }
+
+    emit:
+    multiqc_report = ch_multiqc_report
+    versions = ch_versions // channel: [ path(versions.yml) ]
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+THE END
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
