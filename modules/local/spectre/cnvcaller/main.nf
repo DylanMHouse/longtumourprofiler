@@ -18,7 +18,7 @@ process SPECTRE_CNVCALLER {
     tuple val(meta), path("${prefix}_cnv.bed")                , emit: bed
     tuple val(meta), path("${prefix}.spc.gz")                 , emit: spc
     tuple val(meta), path("${prefix}_predicted_karyotype.txt"), emit: karyotype
-    tuple val("${task.process}"), val("spectre"), eval("spectre version 2>&1 | sed 's/.*version: //'"), emit: versions_spectre, topic: versions
+    tuple val("${task.process}"), val("spectre"), eval("spectre version 2>&1 | tail -n1 | sed 's/.*version: //'"), emit: versions_spectre, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

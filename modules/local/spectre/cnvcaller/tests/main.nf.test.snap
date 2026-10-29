@@ -23,7 +23,7 @@
                         {
                             "id": "test"
                         },
-                        "test_spectre.spc.gz:md5,2f6fe24a820af1ff33b0f22694bf4f6c"
+                        "test_spectre.spc.gz:md5,9a40a0524a91fe820c17b9b84b7cded7"
                     ]
                 ],
                 "vcf": [
@@ -38,12 +38,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-ed69rvua because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:10:26.880779474",
+        "timestamp": "2026-10-29T15:42:38.393946125",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
@@ -88,12 +88,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-mh0d2hvd because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:11:55.465950566",
+        "timestamp": "2026-10-29T15:43:48.527539032",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
@@ -138,12 +138,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-4if5dk5l because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:11:39.256019094",
+        "timestamp": "2026-10-29T15:43:36.372366446",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
@@ -173,7 +173,7 @@
                         {
                             "id": "test"
                         },
-                        "test_spectre.spc.gz:md5,fa2ad68c1c4cbd8fffd7b349be6b5632"
+                        "test_spectre.spc.gz:md5,fa6da6dbb54a707c4444d56133fd247a"
                     ]
                 ],
                 "vcf": [
@@ -188,12 +188,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-tczbv0e1 because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:11:05.61328863",
+        "timestamp": "2026-10-29T15:43:12.225620651",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
@@ -223,7 +223,7 @@
                         {
                             "id": "test"
                         },
-                        "test_spectre.spc.gz:md5,3fff1021ad58bc398ec5b15d8e722289"
+                        "test_spectre.spc.gz:md5,0ff4cc7e1a99e294834eaecc8628e356"
                     ]
                 ],
                 "vcf": [
@@ -238,12 +238,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-42unlc4f because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:09:39.729955566",
+        "timestamp": "2026-10-29T15:42:05.205337822",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
@@ -288,12 +288,12 @@
                     [
                         "SPECTRE_CNVCALLER",
                         "spectre",
-                        "Matplotlib created a temporary config/cache directory at /tmp/matplotlib-20b7xnfh because the default path (/home/dylan/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.\nFontconfig error: No writable cache directories\n0.3.2"
+                        "0.3.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-28T23:11:22.390449293",
+        "timestamp": "2026-10-29T15:43:24.420182377",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.4"
