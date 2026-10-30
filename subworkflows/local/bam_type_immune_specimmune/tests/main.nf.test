@@ -24,7 +24,8 @@ nextflow_workflow {
 
                 input[0] = Channel.of([
                     [ id:'test_T', patient:'test', type:'tumour' ],
-                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true)
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/nanopore/bam/savana/colo829.PAU61426.sup.chr22.subset.0.05.bam.bai', checkIfExists: true)
                 ])
                 input[1] = Channel.value([
                     [ id:'hg38_chr22' ],

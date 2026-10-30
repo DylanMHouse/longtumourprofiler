@@ -1,6 +1,6 @@
 process SPECIMMUNE_TYPING {
     tag "${meta.id}:${gene_class}"
-    label 'process_medium'
+    label 'process_high'
 
     container 'ghcr.io/dylanmhouse/specimmune:0.0.3'
 

@@ -1,0 +1,89 @@
+name: "fastvep_annotate"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "fastvep":
+      description: "A high-performance variant effect predictor with clinical database integration, written in Rust"
+      homepage: "https://github.com/Huang-lab/fastVEP/blob/v0.4.0/README.md"
+      documentation: "https://github.com/Huang-lab/fastVEP/blob/v0.4.0/README.md"
+      tool_dev_url: "https://github.com/Huang-lab/fastVEP"
+      doi: ""
+      licence: ["Apache-2.0"]
+      identifier: null
+
+input:
+  ### TODO nf-core: Add a description of all of the variables used as input
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Sorted BAM/CRAM/SAM file
+        pattern: "*.{bam,cram,sam}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_2573" # CRAM
+          - edam: "http://edamontology.org/format_3462" # SAM
+
+output:
+  ### TODO nf-core: Add a description of all of the variables used as output
+  bam:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.bam":
+          type: file
+          description: Sorted BAM/CRAM/SAM file
+          pattern: "*.{bam,cram,sam}"
+          ontologies:
+            - edam: "http://edamontology.org/format_2572" # BAM
+            - edam: "http://edamontology.org/format_2573" # CRAM
+            - edam: "http://edamontology.org/format_3462" # SAM
+  versions_fastvep:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "fastvep":
+          type: string
+          description: The name of the tool
+      - "fastvep --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - fastvep:
+          type: string
+          description: The name of the tool
+      - fastvep --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/fastvep:0.4.0--7b1668f56f21e4a7
+      build_id: bd-7b1668f56f21e4a7_1
+      scan_id: sc-1f1a42c1f0af4611_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/fastvep:0.4.0--4ced65a1fb168e87
+      build_id: bd-4ced65a1fb168e87_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/dd/ddc66c5de3a77b07dfa33c549ea7500dc22732451c4b668429a5db5065a59af6/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/fastvep/annotate/.conda-lock/linux_amd64-bd-7b1668f56f21e4a7_1.txt
