@@ -1,62 +1,136 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-# # TODO nf-core: Add a description of the module and list keywords
 name: "clairs"
-description: write your description here
+description: ClairS is a deep-learning somatic small variant caller for tumour-normal
+  long-read pairs.
 keywords:
-  - sort
-  - example
-  - genomics
+  - somatic
+  - variant calling
+  - tumour-normal
+  - long-read
+  - nanopore
+  - snv
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
   - "clairs":
-      description: ""
-      homepage: ""
-      documentation: ""
-      tool_dev_url: ""
-      doi: ""
-      licence: null
-      identifier: null
+      description: "ClairS calls somatic small variants from a tumour and matched normal
+        long-read pair. It uses Clair3 to remove germline variants, then combines pileup
+        and full-alignment models with post-processing filters."
+      homepage: "https://github.com/HKU-BAL/ClairS"
+      documentation: "https://github.com/HKU-BAL/ClairS"
+      tool_dev_url: "https://github.com/HKU-BAL/ClairS"
+      doi: "10.1101/2023.08.17.553778"
+      licence:
+        - "BSD-3-clause"
+      identifier: "biotools:clairs"
 
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - bam:
+    - tumour_bam:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Sorted and indexed tumour BAM/CRAM file
+        pattern: "*.{bam,cram}"
         ontologies:
           - edam: "http://edamontology.org/format_2572" # BAM
           - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
+    - tumour_bai:
+        type: file
+        description: Index of the tumour BAM/CRAM file
+        pattern: "*.{bai,crai}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3327" # BAI
+    - normal_bam:
+        type: file
+        description: Sorted and indexed matched normal BAM/CRAM file
+        pattern: "*.{bam,cram}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_2573" # CRAM
+    - normal_bai:
+        type: file
+        description: Index of the normal BAM/CRAM file
+        pattern: "*.{bai,crai}"
+        ontologies:
+          -edam: "http://edamontology.org/format_3327" # BAI
+  - platform:
+      type: string
+      description: |
+        Sequencing platform, such as ont_r10_dorado_sup_4khz, ont_r10_dorado_sup_5khz_ssrs,
+        ont_r10_dorado_hac_5khz_v6 or hifi_revio_ssrs.
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing reference information
+          e.g. `[ id:'hg38' ]`
+    - fasta:
+        type: file
+        description: Reference FASTA file
+        pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_1929" # FASTA
+  - - meta3:
+        type: map
+        description: |
+          Groovy Map containing reference information
+          e.g. `[ id:'hg38' ]`
+    - fai:
+        type: file
+        description: Index of the reference FASTA file
+        pattern: "*.fai"
+        ontologies: []
+  - bed:
+      type: file
+      description: Optional BED file restricting variant calling to the given regions
+      pattern: "*.bed"
+      ontologies:
+        - edam: "http://edamontology.org/format_3003" # BED
+  - pileup_model:
+      type: file
+      description: Optional custom pileup model, used instead of the packaged model
+      pattern: "*.pkl"
+      ontologies: []
+  - full_alignment_model:
+      type: file
+      description: Optional custom full-alignment model, used instead of the packaged model
+      pattern: "*.pkl"
+      ontologies:
+        -edam: "http://edamontology.org/format_3653" # pkl
 
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  vcf:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
             e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - ${prefix}.vcf.gz:
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
+          description: Compressed somatic VCF file
+          pattern: "${prefix}.vcf.gz"
           ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
+            - edam: "http://edamontology.org/format_3016" # VCF
+  tbi:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}.vcf.gz.tbi:
+          type: file
+          description: Index of the compressed somatic VCF file
+          pattern: "${prefix}.vcf.gz.tbi"
+          ontologies:
+            - edam: "http://edamontology.org/format_3616" # TBI
   versions_clairs:
-    - - "${task.process}":
+    - - ${task.process}:
           type: string
           description: The name of the process
-      - "clairs":
+      - clairs:
           type: string
           description: The name of the tool
-      - "clairs --version":
+      - run_clairs --version | sed 's/.* //':
           type: eval
           description: The expression to obtain the version of the tool
 
@@ -68,7 +142,7 @@ topics:
       - clairs:
           type: string
           description: The name of the tool
-      - clairs --version:
+      - run_clairs --version | sed 's/.* //':
           type: eval
           description: The expression to obtain the version of the tool
 authors:

@@ -1,0 +1,93 @@
+{
+    "homo_sapiens - ont - bam - tumour, normal - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        "CLAIRS",
+                        "clairs",
+                        "0.5.1"
+                    ]
+                ],
+                "tbi": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "versions_clairs": [
+                    [
+                        "CLAIRS",
+                        "clairs",
+                        "0.5.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-31T19:55:29.840642881",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - ont - bam - tumour, normal": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    [
+                        "chr22\t24229266\t.\tT\tC\t0.000\tLowQual\tFAU=0;FCU=2;FGU=0;FTU=0;RAU=0;RCU=1;RGU=0;RTU=2\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:4:5:0.6000:2,3:0.2500:4:3,1:0:3:0:2:0:1:0:3",
+                        "chr22\t24495324\t.\tC\tG\t0.000\tLowQual\tFAU=0;FCU=2;FGU=1;FTU=0;RAU=0;RCU=1;RGU=2;RTU=0\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:3:6:0.5000:3,3:0.0000:1:1,0:0:3:3:0:0:1:0:0",
+                        "chr22\t24825363\t.\tG\tT\t0.000\tLowQual\tH;FAU=0;FCU=0;FGU=2;FTU=4;RAU=0;RCU=0;RGU=1;RTU=1\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:3:8:0.6250:3,5:0.0000:1:1,0:0:0:3:5:0:0:1:0",
+                        "chr22\t24836413\t.\tT\tC\t0.000\tLowQual\tH;FAU=0;FCU=3;FGU=0;FTU=1;RAU=0;RCU=1;RGU=0;RTU=2\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:2:7:0.5714:3,4:0.0000:2:2,0:0:4:0:3:0:0:0:2",
+                        "chr22\t24969272\t.\tC\tA\t0.000\tLowQual\tFAU=1;FCU=1;FGU=0;FTU=0;RAU=2;RCU=1;RGU=0;RTU=0\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:4:5:0.6000:2,3:0.0000:1:1,0:3:2:0:0:0:1:0:0",
+                        "chr22\t24972576\t.\tA\tC\t0.000\tLowQual\tFAU=1;FCU=1;FGU=0;FTU=0;RAU=1;RCU=2;RGU=0;RTU=0\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:2:5:0.6000:2,3:0.0000:1:1,0:2:3:0:0:1:0:0:0",
+                        "chr22\t24990888\t.\tG\tA\t0.000\tLowQual\tFAU=1;FCU=0;FGU=0;FTU=0;RAU=3;RCU=0;RGU=1;RTU=0\tGT:GQ:DP:AF:AD:NAF:NDP:NAD:AU:CU:GU:TU:NAU:NCU:NGU:NTU\t0/1:3:5:0.8000:1,4:0.0000:2:2,0:4:0:1:0:0:0:2:0"
+                    ]
+                ]
+            ],
+            {
+                "versions_clairs": [
+                    [
+                        "CLAIRS",
+                        "clairs",
+                        "0.5.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-31T19:58:07.762983575",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.4"
+        }
+    }
+}
