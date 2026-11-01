@@ -5,7 +5,7 @@ process CNVPYTOR {
     container 'ghcr.io/dylanmhouse/cnvpytor:1.3.2'
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam), path(bai), path(snv)
     tuple val(meta2), path(fasta)
     val(bin_size)
 
@@ -24,14 +24,13 @@ process CNVPYTOR {
     """
     export MPLCONFIGDIR=\$(pwd)/.mplconfig
 
+    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -snp ${snv}
     cnvpytor -root ${prefix}.pytor -j ${task.cpus} -rd ${bam} -T ${fasta} ${args}
-    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -gc ${fasta}
+    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -mask_snps
+    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -baf ${bin_size}
     cnvpytor -root ${prefix}.pytor -j ${task.cpus} -his ${bin_size}
-    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -partition ${bin_size}
-    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -call ${bin_size} > ${prefix}.cnvpytor.tsv
-
-    printf 'set print_filename ${prefix}.cnvpytor.vcf\\nprint calls\\n' \\
-        | cnvpytor -root ${prefix}.pytor -view ${bin_size}
+    cnvpytor -root ${prefix}.pytor -j ${task.cpus} -call combined ${bin_size} > ${prefix}.cnvpytor.tsv
+    cnvpytor -root ${prefix}.pytor -view ${bin_size}
 
     """
 

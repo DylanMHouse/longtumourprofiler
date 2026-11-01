@@ -39,8 +39,7 @@ input:
         type: file
         description: Index of the tumour BAM/CRAM file
         pattern: "*.{bai,crai}"
-        ontologies:
-          - edam: "http://edamontology.org/format_3327" # BAI
+        ontologies: []
     - normal_bam:
         type: file
         description: Sorted and indexed matched normal BAM/CRAM file
@@ -52,8 +51,7 @@ input:
         type: file
         description: Index of the normal BAM/CRAM file
         pattern: "*.{bai,crai}"
-        ontologies:
-          -edam: "http://edamontology.org/format_3327" # BAI
+        ontologies: []
   - platform:
       type: string
       description: |
@@ -95,8 +93,7 @@ input:
       type: file
       description: Optional custom full-alignment model, used instead of the packaged model
       pattern: "*.pkl"
-      ontologies:
-        -edam: "http://edamontology.org/format_3653" # pkl
+      ontologies: []
 
 output:
   vcf:
@@ -121,8 +118,7 @@ output:
           type: file
           description: Index of the compressed somatic VCF file
           pattern: "${prefix}.vcf.gz.tbi"
-          ontologies:
-            - edam: "http://edamontology.org/format_3616" # TBI
+          ontologies: []
   versions_clairs:
     - - ${task.process}:
           type: string

@@ -1,30 +1,30 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/longtumourprofiler
+nf-core/longtumourprofiler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/longtumourprofiler
-    Website: https://nf-co.re/longtumourprofiler
-    Slack  : https://nfcore.slack.com/channels/longtumourprofiler
+Github : https://github.com/nf-core/longtumourprofiler
+Website: https://nf-co.re/longtumourprofiler
+Slack  : https://nfcore.slack.com/channels/longtumourprofiler
 ----------------------------------------------------------------------------------------
-*/
+ */
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+ */
 
-include { LONGTUMOURPROFILER  } from './workflows/longtumourprofiler'
+include { LONGTUMOURPROFILER } from './workflows/longtumourprofiler'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
+include { PIPELINE_COMPLETION } from './subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
+include { getGenomeAttribute } from './subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    GENOME PARAMETER VALUES
+GENOME PARAMETER VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+ */
 
 // TODO nf-core: Remove this line if you don't need a FASTA file
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
@@ -33,15 +33,14 @@ params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    NAMED WORKFLOWS FOR PIPELINE
+NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+ */
 
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow NFCORE_LONGTUMOURPROFILER {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
@@ -53,12 +52,12 @@ workflow NFCORE_LONGTUMOURPROFILER {
     // Split each samplesheet row into a tumour and a germline item so every per-sample process runs for both
     ch_samples = samplesheet.flatMap { meta, tumour, germline ->
         [
-            [ meta + [patient: meta.id, id: "${meta.id}_T", type: 'tumour'  ], tumour   ],
-            [ meta + [patient: meta.id, id: "${meta.id}_N", type: 'germline'], germline ],
+            [meta + [patient: meta.id, id: "${meta.id}_T", type: 'tumour'], tumour],
+            [meta + [patient: meta.id, id: "${meta.id}_N", type: 'germline'], germline],
         ]
     }
 
-    def valid_input_types = ['fastq', 'bam'] // bam = unaligned (Dorado) BAM. ALigned BAM files are not currently supported unfortunately.
+    def valid_input_types = ['fastq', 'bam', 'aligned_bam'] // bam = unaligned (Dorado) BAM; aligned_bam = coordinate-sorted BAM, alignment is skipped
     if (!(params.input_type in valid_input_types)) {
         error("Invalid --input_type '${params.input_type}'. Valid options: ${valid_input_types.join(', ')}")
     }
@@ -71,30 +70,28 @@ workflow NFCORE_LONGTUMOURPROFILER {
     //
     // WORKFLOW: Run pipeline
     //
-        LONGTUMOURPROFILER (
-            ch_samples,
-            params.multiqc_config,
-            params.multiqc_logo,
-            params.multiqc_methods_description,
-            params.outdir,
-        )
+    LONGTUMOURPROFILER(
+        ch_samples,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir,
+    )
 
     emit:
     multiqc_report = LONGTUMOURPROFILER.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN MAIN WORKFLOW
+RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+ */
 
 workflow {
-
-    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION(
         params.version,
         params.validate_params,
         params.monochrome_logs,
@@ -103,30 +100,30 @@ workflow {
         params.input,
         params.help,
         params.help_full,
-        params.show_hidden
+        params.show_hidden,
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_LONGTUMOURPROFILER (
+    NFCORE_LONGTUMOURPROFILER(
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION (
+    PIPELINE_COMPLETION(
         params.email,
         params.email_on_fail,
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        NFCORE_LONGTUMOURPROFILER.out.multiqc_report
+        NFCORE_LONGTUMOURPROFILER.out.multiqc_report,
     )
 }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
+THE END
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+ */

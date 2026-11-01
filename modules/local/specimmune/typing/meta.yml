@@ -40,7 +40,7 @@ input:
   - hg38:
       type: file
       description: |
-        No-alt hg38 fasta with its .fai and bwa index files, needed for CYP and IG_TR.
+        No-alt hg38 fasta with its .fai and bwa index files, needed for IG_TR.
         Can be [] for HLA and KIR
       pattern: "*.{fa,fasta,fna,fai,amb,ann,bwt,pac,sa}"
       ontologies: []

@@ -81,6 +81,7 @@ nextflow_workflow {
                     [ id:'hg38_chr22' ],
                     file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
                 ])
+                input[3] = true
                 """
             }
         }
@@ -123,6 +124,7 @@ nextflow_workflow {
                     [ id:'hg38_chr22' ],
                     file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
                 ])
+                input[3] = true
                 """
             }
         }
@@ -163,6 +165,7 @@ nextflow_workflow {
                     [ id:'hg38_chr22' ],
                     file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/chr22/sequence/hg38.chr22.fasta.fai', checkIfExists: true)
                 ])
+                input[3] = true
                 """
             }
         }

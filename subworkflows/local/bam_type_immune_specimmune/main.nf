@@ -9,7 +9,7 @@ workflow BAM_TYPE_IMMUNE_SPECIMMUNE {
     ch_fasta // channel: [ val(meta), path(fasta) ] only read for CRAM input
     ch_gene_classes // channel: val(gene_class) any of HLA, KIR, CYP, IG_TR
     ch_db // channel: path(db) folder built by SpecImmune's make_db.py
-    ch_hg38 // channel: [ path(fasta), path(index files) ] no-alt hg38 for CYP and IG_TR, can be []
+    ch_hg38 // channel: [ path(fasta), path(index files) ] no-alt hg38 for IG_TR, can be []
 
     main:
 

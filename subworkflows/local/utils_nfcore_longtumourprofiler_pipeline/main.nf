@@ -25,10 +25,8 @@ SUBWORKFLOW TO INITIALISE PIPELINE
 
 
 def resolveFiles(sample_id: String, label: String, path_str, samplesheet_dir) {
-    // --input_type bam expects unaligned BAMs; fastq expects gzipped fastq
-    def exts = params.input_type == 'bam' ? ['bam'] : ['fastq.gz', 'fq.gz']
-    // Relative paths resolve against the launch directory (nf-schema makes them absolute),
-    // falling back to the samplesheet's directory so test sheets work from any launch directory
+    // --input_type bam expects unaligned BAMs, aligned_bam one sorted BAM; fastq expects gzipped fastq
+    def exts = params.input_type in ['bam', 'aligned_bam'] ? ['bam'] : ['fastq.gz', 'fq.gz']
     def p = file(path_str)
     if (!p.exists() && p.startsWith(workflow.launchDir)) {
         p = samplesheet_dir.resolve(workflow.launchDir.relativize(p).toString())
@@ -55,6 +53,9 @@ def resolveFiles(sample_id: String, label: String, path_str, samplesheet_dir) {
         error("Sample '${sample_id}': no ${exts.join('/')} files found in ${path_str} (${label})")
     }
     // minimap2 treats two query files as paired-end, so fastq input must be one file per sample until a merge step exists
+    if (params.input_type == 'aligned_bam' && found.size() > 1) {
+        error("Sample '${sample_id}': ${found.size()} BAM files found in ${path_str} (${label}). --input_type aligned_bam takes one sorted BAM per sample")
+    }
     if (params.input_type == 'fastq' && found.size() > 1) {
         error("Sample '${sample_id}': ${found.size()} fastq files found in ${path_str} (${label}). Merge them into a single fastq.gz per sample")
     }

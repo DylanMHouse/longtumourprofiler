@@ -53,7 +53,8 @@
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
+                    "default": "GRCh38"
                 },
                 "fasta": {
                     "type": "string",
@@ -248,16 +249,19 @@
     ],
     "properties": {
         "qc": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
         },
         "coverage": {
             "type": "boolean"
         },
         "preparebam": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
         },
         "minimap2": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
         },
         "input_type": {
             "type": "string",
@@ -299,7 +303,8 @@
             "type": "string"
         },
         "clair3": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
         },
         "clair3_home_model": {
             "type": "string"
@@ -328,7 +333,7 @@
         },
         "cnvpytor_bin_size": {
             "type": "integer",
-            "default": 1000,
+            "default": 10000,
             "minimum": 100,
             "description": "CNVpytor bin size in bp. Smaller bins resolve smaller CNVs but need more coverage"
         },
@@ -391,6 +396,15 @@
             "format": "directory-path",
             "exists": true,
             "description": "VEP cache directory for CPSR annotation"
+        },
+        "sniffles_tandem_repeats": {
+            "type": "string"
+        },
+        "longphase_modcall": {
+            "type": "boolean"
+        },
+        "cpsr_regions": {
+            "type": "string"
         }
     }
 }

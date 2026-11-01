@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "cnvpytor"
-description: Call copy number variants from read depth with CNVpytor, running the
-  -rd, -gc, -his, -partition and -call steps on one .pytor root file and exporting
-  the calls as VCF and TSV.
+description: Call copy number variants with CNVpytor's combined read depth and
+  B-allele frequency caller, running the -snp, -rd, -mask_snps, -baf, -his and
+  -call combined steps on one .pytor root file and exporting the calls as VCF and TSV.
 keywords:
   - cnv
   - copy number
@@ -40,6 +40,12 @@ input:
         pattern: "*.{bai,crai,csi}"
         ontologies:
           - edam: "http://edamontology.org/format_3327" # BAI
+    - snv:
+        type: file
+        description: Small variant calls for the same sample, used for B-allele frequencies
+        pattern: "*.{vcf,vcf.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
   - - meta2:
         type: map
         description: |
@@ -47,13 +53,13 @@ input:
           e.g. `[ id:'genome' ]`
     - fasta:
         type: file
-        description: Reference the reads were aligned to; used to decode CRAM and for GC correction
+        description: Reference the reads were aligned to; used to decode CRAM
         pattern: "*.{fa,fasta,fna}"
         ontologies:
           - edam: "http://edamontology.org/format_1929" # FASTA
   - bin_size:
       type: integer
-      description: Bin size in bp for the histogram, partition and calling steps
+      description: Bin size in bp for the BAF, histogram and calling steps
 
 output:
   pytor:
@@ -64,7 +70,7 @@ output:
             e.g. `[ id:'sample1' ]`
       - "${prefix}.pytor":
           type: file
-          description: CNVpytor root file with read depth, GC, histograms, partition and calls; can be reopened with cnvpytor -view
+          description: CNVpytor root file with SNPs, read depth, BAF, histograms and calls; can be reopened with cnvpytor -view
           pattern: "*.pytor"
           ontologies: []
   vcf:
@@ -88,8 +94,7 @@ output:
       - "${prefix}.cnvpytor.tsv":
           type: file
           description: |
-            CNV calls as printed by cnvpytor -call: type, region, size, normalized read depth,
-            e-values 1-4, q0, pN and dG
+            CNV calls as printed by cnvpytor -call combined
           pattern: "*.cnvpytor.tsv"
           ontologies:
             - edam: "http://edamontology.org/format_3475" # TSV

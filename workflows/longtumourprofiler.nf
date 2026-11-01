@@ -11,6 +11,7 @@ include { MOSDEPTH } from '../modules/nf-core/mosdepth/main'
 include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools'
 
 include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_INPUT } from '../modules/nf-core/samtools/index/main'
 include { FASTQ_ALIGN_MINIMAP2 } from '../subworkflows/local/fastq_align_minimap2'
 include { BAM_CONVERT_FASTQ_QC } from '../subworkflows/local/bam_convert_fastq_qc'
 include { BAM_CALL_SNV_CLAIR3 } from '../subworkflows/local/bam_call_snv_clair3'
@@ -48,8 +49,7 @@ workflow LONGTUMOURPROFILER {
     def ch_versions = channel.empty()
     def ch_multiqc_files = channel.empty()
     def ch_multiqc_report = channel.empty()
-    def ch_aligned = channel.empty()
-    def ch_aligned_index = channel.empty()
+    def ch_input_bam = channel.empty()
 
     //
     // Collate and save software versions
@@ -115,6 +115,17 @@ workflow LONGTUMOURPROFILER {
         : ch_fasta
 
 
+    // Clair3 SNVs feed CNVpytor, longphase and CPSR; Spectre is skipped without them
+    if (!params.clair3) {
+        def needs_snvs = ['cnvpytor', 'phasing', 'cpsr'].findAll { step -> params[step] }
+        if (needs_snvs) {
+            error("--${needs_snvs.join(', --')} need the Clair3 SNV calls, so they need --clair3")
+        }
+    }
+    if (!params.minimap2 && params.input_type != 'aligned_bam') {
+        error("--minimap2 false needs --input_type aligned_bam")
+    }
+
     // Clair3 model: a packaged model name (in the container) OR a user model directory, not both
     if (params.clair3) {
         if (params.clair3_model && params.clair3_home_model) {
@@ -129,12 +140,8 @@ workflow LONGTUMOURPROFILER {
         ? channel.fromPath(params.clair3_home_model, type: 'dir', checkIfExists: true).map { model_dir -> [[], model_dir, 'ont'] }.first()
         : channel.value([params.clair3_model, [], 'ont'])
 
-    // SpecImmune: typing runs on the haplotagged BAM, so it needs --phasing
     def specimmune_genes = params.specimmune_genes.tokenize(',')*.trim()
     if (params.specimmune) {
-        if (!params.phasing) {
-            error("--specimmune types reads from the haplotagged BAM, so it needs --phasing")
-        }
         if (!params.specimmune_db) {
             error("--specimmune needs --specimmune_db, the folder built by SpecImmune's make_db.py")
         }
@@ -142,8 +149,8 @@ workflow LONGTUMOURPROFILER {
         if (unknown_genes) {
             error("--specimmune_genes takes HLA, KIR, CYP and IG_TR, not: ${unknown_genes.join(', ')}")
         }
-        if (specimmune_genes.intersect(['CYP', 'IG_TR']) && !params.specimmune_hg38) {
-            error("CYP and IG_TR typing need --specimmune_hg38, a no-alt hg38 fasta (bwa-indexed, with .fai)")
+        if ('IG_TR' in specimmune_genes && !params.specimmune_hg38) {
+            error("IG_TR typing needs --specimmune_hg38, a no-alt hg38 fasta (bwa-indexed, with .fai)")
         }
     }
 
@@ -173,6 +180,14 @@ workflow LONGTUMOURPROFILER {
         ? channel.fromPath(params.spectre_blacklist, checkIfExists: true).first()
         : channel.value([])
 
+    def ch_tandem_repeats = params.sniffles_tandem_repeats
+        ? channel.fromPath(params.sniffles_tandem_repeats, checkIfExists: true).map { bed -> tuple([id: "tandem_repeats"], bed) }.first()
+        : channel.value([[:], []])
+
+    def ch_cpsr_regions = params.cpsr_regions
+        ? channel.fromPath(params.cpsr_regions, checkIfExists: true).first()
+        : channel.value([])
+
     // CPSR needs the PCGR reference bundle and a VEP cache
     if (params.cpsr && !(params.cpsr_refdata && params.cpsr_vep_cache)) {
         error("--cpsr needs --cpsr_refdata (PCGR reference data) and --cpsr_vep_cache (VEP cache directory)")
@@ -198,7 +213,20 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    if (params.minimap2) {
+    if (params.input_type == 'aligned_bam') {
+        // Reuse an existing .bai next to the BAM, otherwise index it
+        def ch_bam_index = ch_samplesheet
+            .map { meta, bams -> [meta, bams[0]] }
+            .branch { _meta, bam ->
+                indexed: file("${bam}.bai").exists()
+                unindexed: true
+            }
+        SAMTOOLS_INDEX_INPUT(ch_bam_index.unindexed)
+        ch_input_bam = ch_bam_index.indexed
+            .map { meta, bam -> [meta, bam, file("${bam}.bai")] }
+            .mix(ch_bam_index.unindexed.join(SAMTOOLS_INDEX_INPUT.out.index, by: 0))
+    }
+    else if (params.minimap2) {
 
         if (params.input_type == 'fastq') {
 
@@ -212,39 +240,36 @@ workflow LONGTUMOURPROFILER {
             FASTQ_ALIGN_MINIMAP2(BAM_CONVERT_FASTQ_QC.out.fastq, ch_minimap2_ref)
         }
 
-        // Keep the full meta (id, patient, type) so tumour and germline can be told apart downstream. I've had this issue in previous commits :(
-        ch_aligned = FASTQ_ALIGN_MINIMAP2.out.bam
-        ch_aligned_index = FASTQ_ALIGN_MINIMAP2.out.bai
+        // Keep the full meta (id, patient, type) so tumour and germline can be told apart downstream
+        ch_input_bam = FASTQ_ALIGN_MINIMAP2.out.bam.join(FASTQ_ALIGN_MINIMAP2.out.bai, by: 0)
+    }
 
-        ch_input_bam = ch_aligned.join(ch_aligned_index, by: 0)
+    // Generate some statistics of aligned reads
+    BAM_STATS_SAMTOOLS(
+        ch_input_bam,
+        ch_fasta_fai,
+    )
+    ch_multiqc_files = ch_multiqc_files
+        .mix(BAM_STATS_SAMTOOLS.out.stats.map { _meta, file -> file })
+        .mix(BAM_STATS_SAMTOOLS.out.flagstat.map { _meta, file -> file })
+        .mix(BAM_STATS_SAMTOOLS.out.idxstats.map { _meta, file -> file })
 
-        // Generate some statistics of aligned reads
-        BAM_STATS_SAMTOOLS(
-            ch_input_bam,
-            ch_fasta_fai,
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    COVERAGE
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.coverage) {
+        MOSDEPTH(
+            // wrap the bed so an empty [] still fills the bed slot: [ meta, bam, bai, bed ]
+            ch_input_bam.combine(ch_intervals.map { bed -> [bed] }),
+            ch_fasta,
+            [],
         )
         ch_multiqc_files = ch_multiqc_files
-            .mix(BAM_STATS_SAMTOOLS.out.stats.map { _meta, file -> file })
-            .mix(BAM_STATS_SAMTOOLS.out.flagstat.map { _meta, file -> file })
-            .mix(BAM_STATS_SAMTOOLS.out.idxstats.map { _meta, file -> file })
-
-        /*
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        COVERAGE
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-         */
-
-        if (params.coverage) {
-            MOSDEPTH(
-                // wrap the bed so an empty [] still fills the bed slot: [ meta, bam, bai, bed ]
-                ch_input_bam.combine(ch_intervals.map { bed -> [bed] }),
-                ch_fasta,
-                [],
-            )
-            ch_multiqc_files = ch_multiqc_files
-                .mix(MOSDEPTH.out.global_txt.map { _meta, file -> file })
-                .mix(MOSDEPTH.out.summary_txt.map { _meta, file -> file })
-        }
+            .mix(MOSDEPTH.out.global_txt.map { _meta, file -> file })
+            .mix(MOSDEPTH.out.summary_txt.map { _meta, file -> file })
     }
 
 
@@ -254,11 +279,15 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    BAM_CALL_SNV_CLAIR3(
-        ch_input_bam.combine(ch_clair3_model),
-        ch_fasta,
-        SAMTOOLS_FAIDX.out.fai.first(),
-    )
+    def ch_snv_vcf = channel.empty()
+    if (params.clair3) {
+        BAM_CALL_SNV_CLAIR3(
+            ch_input_bam.combine(ch_clair3_model),
+            ch_fasta,
+            SAMTOOLS_FAIDX.out.fai.first(),
+        )
+        ch_snv_vcf = BAM_CALL_SNV_CLAIR3.out.vcf
+    }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -269,9 +298,10 @@ workflow LONGTUMOURPROFILER {
     // CPSR reports cancer predisposition variants, so it only takes the germline calls
     if (params.cpsr) {
         VCF_REPORT_CPSR(
-            BAM_CALL_SNV_CLAIR3.out.vcf.filter { meta, _vcf -> meta.type == 'germline' },
+            ch_snv_vcf.filter { meta, _vcf -> meta.type == 'germline' },
             channel.fromPath(params.cpsr_refdata, type: 'dir', checkIfExists: true).first(),
             channel.fromPath(params.cpsr_vep_cache, type: 'dir', checkIfExists: true).first(),
+            ch_cpsr_regions,
         )
     }
 
@@ -281,19 +311,20 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    //Spectre uses the filtered Clair3 SNVs of the same sample to estimate diploid coverage
+    // Spectre uses the Clair3 SNVs of the same sample to estimate diploid coverage
     BAM_CALL_SV_CNV(
         ch_input_bam,
-        BAM_CALL_SNV_CLAIR3.out.vcf,
+        ch_snv_vcf,
         ch_fasta,
         ch_spectre_metadata,
         ch_spectre_blacklist,
+        ch_tandem_repeats,
     )
 
-    // CNVpytor calls read depth CNVs at a finer bin size than Spectre's >100kb calls
+    // CNVpytor combines read depth with B-allele frequencies from the Clair3 SNVs
     if (params.cnvpytor) {
         CNVPYTOR(
-            ch_input_bam,
+            ch_input_bam.join(ch_snv_vcf, by: 0),
             ch_fasta,
             params.cnvpytor_bin_size,
         )
@@ -305,33 +336,36 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    def ch_str_input = ch_input_bam
     if (params.phasing) {
-        // Co-phase each samples'SNVS, Sniffles SVs and 5mC calls.
+        // Co-phase each sample's SNVs and Sniffles SVs (and 5mC calls with --longphase_modcall)
         def ch_phase_input = ch_input_bam
-            .join(BAM_CALL_SNV_CLAIR3.out.vcf, by: 0)
+            .join(ch_snv_vcf, by: 0)
             .join(BAM_CALL_SV_CNV.out.sv_vcf, by: 0)
 
         BAM_PHASE_HAPLOTAG_LONGPHASE(
             ch_phase_input,
             ch_fasta,
             SAMTOOLS_FAIDX.out.fai.first(),
+            params.longphase_modcall,
         )
+        ch_str_input = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
+    }
 
-        /*
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        IMMUNE GENE TYPING
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-         */
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMMUNE GENE TYPING
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
 
-        if (params.specimmune) {
-            BAM_TYPE_IMMUNE_SPECIMMUNE(
-                BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0),
-                ch_fasta,
-                channel.fromList(specimmune_genes),
-                ch_specimmune_db,
-                ch_specimmune_hg38,
-            )
-        }
+    if (params.specimmune) {
+        BAM_TYPE_IMMUNE_SPECIMMUNE(
+            ch_input_bam,
+            ch_fasta,
+            channel.fromList(specimmune_genes),
+            ch_specimmune_db,
+            ch_specimmune_hg38,
+        )
     }
 
     /*
@@ -340,7 +374,7 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    // Reads keep their MM/ML tags through SAMTOOLS_FASTQ (-T MM,ML) and minimap2 (-y)
+    // Reads keep their MM/ML tags through SAMTOOLS_FASTQ (-T MM,ML,mv) and minimap2 (-y)
     if (params.methyl) {
         MODKIT_PILEUP(
             ch_input_bam,
@@ -355,9 +389,10 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    // Runs on the haplotagged BAM when --phasing, as in the shell workflow
     if (params.strdust) {
         STRDUST(
-            ch_input_bam,
+            ch_str_input,
             ch_fasta,
             SAMTOOLS_FAIDX.out.fai.first(),
             ch_str_bed,

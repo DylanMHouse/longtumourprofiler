@@ -10,20 +10,26 @@ workflow BAM_PHASE_HAPLOTAG_LONGPHASE {
     ch_input // channel: [ val(meta), path(bam), path(bai), path(snvs), path(svs) ] svs can be []
     ch_fasta // channel: [ val(meta), path(fasta) ]
     ch_fai // channel: [ val(meta), path(fai) ]
+    run_modcall // boolean: call modifications with longphase modcall and co-phase them
 
     main:
 
     ch_bam = ch_input.map { meta, bam, bai, _snvs, _svs -> [meta, bam, bai] }
     ch_fasta_fai = ch_fasta.join(ch_fai, by: 0).first() // [ meta, fasta, fai ]
 
-    // Modifications come from the MM/ML tags carried through from the Dorado BAM
-    LONGPHASE_MODCALL(
-        ch_input.map { meta, bam, bai, snvs, _svs -> [meta, bam, bai, snvs] },
-        ch_fasta_fai,
-    )
+    def ch_modcall_vcf = channel.empty()
+    def ch_phase_input = ch_input.map { meta, bam, bai, snvs, svs -> [meta, bam, bai, snvs, svs, []] }
+    if (run_modcall) {
+        LONGPHASE_MODCALL(
+            ch_input.map { meta, bam, bai, snvs, _svs -> [meta, bam, bai, snvs] },
+            ch_fasta_fai,
+        )
+        ch_modcall_vcf = LONGPHASE_MODCALL.out.vcf
+        ch_phase_input = ch_input.join(ch_modcall_vcf, by: 0)
+    }
 
     LONGPHASE_PHASE(
-        ch_input.join(LONGPHASE_MODCALL.out.vcf, by: 0),
+        ch_phase_input,
         ch_fasta,
         ch_fai,
     )
@@ -49,5 +55,5 @@ workflow BAM_PHASE_HAPLOTAG_LONGPHASE {
     snv_vcf = LONGPHASE_PHASE.out.snv_vcf // channel: [ val(meta), path(vcf.gz) ]
     sv_vcf = LONGPHASE_PHASE.out.sv_vcf // channel: [ val(meta), path(vcf.gz) ]
     mod_vcf = LONGPHASE_PHASE.out.mod_vcf // channel: [ val(meta), path(vcf.gz) ]
-    modcall_vcf = LONGPHASE_MODCALL.out.vcf // channel: [ val(meta), path(vcf.gz) ]
+    modcall_vcf = ch_modcall_vcf // channel: [ val(meta), path(vcf.gz) ]
 }
