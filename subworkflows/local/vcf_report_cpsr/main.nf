@@ -8,6 +8,7 @@ workflow VCF_REPORT_CPSR {
     ch_vcf // channel: [ val(meta), path(vcf) ] germline SNV calls
     ch_pcgr_dir // channel: path(pcgr_refdata)
     ch_vep_cache // channel: path(vep_cache)
+    regions
 
     main:
 
@@ -17,7 +18,7 @@ workflow VCF_REPORT_CPSR {
     // Keep PASS variants; output is bgzipped and tabixed. bcftools view keeps the sorted order
     BCFTOOLS_VIEW_PASS(
         BCFTOOLS_SORT_CPSR.out.vcf.join(BCFTOOLS_SORT_CPSR.out.index, by: 0),
-        [],
+        regions,
         [],
         [],
     )
