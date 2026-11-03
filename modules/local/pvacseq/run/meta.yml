@@ -1,0 +1,99 @@
+name: "pvacseq_run"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "pvacseq":
+      description: "Personalized Variant Antigens by Cancer Sequencing (pVAC-Seq)"
+      homepage: "http://pvac-seq.readthedocs.io/"
+      documentation: "http://pvac-seq.readthedocs.io/"
+      tool_dev_url: "None"
+      doi: ""
+      licence: ["NPOSL-3.0"]
+      identifier: null
+
+input:
+  ### TODO nf-core: Add a description of all of the variables used as input
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Sorted BAM/CRAM/SAM file
+        pattern: "*.{bam,cram,sam}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_2573" # CRAM
+          - edam: "http://edamontology.org/format_3462" # SAM
+
+output:
+  ### TODO nf-core: Add a description of all of the variables used as output
+  bam:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.bam":
+          type: file
+          description: Sorted BAM/CRAM/SAM file
+          pattern: "*.{bam,cram,sam}"
+          ontologies:
+            - edam: "http://edamontology.org/format_2572" # BAM
+            - edam: "http://edamontology.org/format_2573" # CRAM
+            - edam: "http://edamontology.org/format_3462" # SAM
+  versions_pvacseq:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "pvacseq":
+          type: string
+          description: The name of the tool
+      - "pvacseq --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pvacseq:
+          type: string
+          description: The name of the tool
+      - pvacseq --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/pvacseq:4.0.10--c4f1d69993203168
+      build_id: bd-c4f1d69993203168_1
+      scan_id: sc-58f0ab3b1be095d3_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/pvacseq:4.0.10--506ae0a7d15e6f54
+      build_id: bd-506ae0a7d15e6f54_1
+      scan_id: sc-9878382336fd542e_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/pvacseq:4.0.10--2a3d611cf133e083
+      build_id: bd-2a3d611cf133e083_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/75/750d0feecfa05b26ab733d14b2b71dba2cdc1cf3c55ba54055fbc8bd284cf810/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/pvacseq:4.0.10--de2cbbb108ed049b
+      build_id: bd-de2cbbb108ed049b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f8/f849c31306ae4f1f8dd7a7170f8e753730e0f17ded573ae333998d4f1dfe0818/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/pvacseq/run/.conda-lock/linux_amd64-bd-506ae0a7d15e6f54_1.txt
+    linux/arm64:
+      lock_file: modules/local/pvacseq/run/.conda-lock/linux_arm64-bd-c4f1d69993203168_1.txt

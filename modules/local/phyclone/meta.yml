@@ -1,0 +1,99 @@
+name: "phyclone"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "phyclone":
+      description: "Accurate Bayesian reconstruction of cancer phylogenies from bulk sequencing."
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "None"
+      doi: ""
+      licence: ["GPL v3-or-later"]
+      identifier: biotools:phyclone
+
+input:
+  ### TODO nf-core: Add a description of all of the variables used as input
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Sorted BAM/CRAM/SAM file
+        pattern: "*.{bam,cram,sam}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_2573" # CRAM
+          - edam: "http://edamontology.org/format_3462" # SAM
+
+output:
+  ### TODO nf-core: Add a description of all of the variables used as output
+  bam:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.bam":
+          type: file
+          description: Sorted BAM/CRAM/SAM file
+          pattern: "*.{bam,cram,sam}"
+          ontologies:
+            - edam: "http://edamontology.org/format_2572" # BAM
+            - edam: "http://edamontology.org/format_2573" # CRAM
+            - edam: "http://edamontology.org/format_3462" # SAM
+  versions_phyclone:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "phyclone":
+          type: string
+          description: The name of the tool
+      - "phyclone --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - phyclone:
+          type: string
+          description: The name of the tool
+      - phyclone --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/phyclone:0.8.0--4b0e1bf122b4b674
+      build_id: bd-4b0e1bf122b4b674_1
+      scan_id: sc-84da04c595c1e969_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/phyclone:0.8.0--3888a7be1a2a7fbf
+      build_id: bd-3888a7be1a2a7fbf_1
+      scan_id: sc-57936f1c55ce41cf_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/phyclone:0.8.0--fc964d360bf10c23
+      build_id: bd-fc964d360bf10c23_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/d5/d5c798b6bd1461dcca776693c5b41bc5f26ce2d1d0fbd5a2094d5878ccb49fd1/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/phyclone:0.8.0--cc671fc99173fc05
+      build_id: bd-cc671fc99173fc05_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/db/dbfc943e204f71963fe6b088da899cc42d82413e461900067f0df40a12e048f6/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/phyclone/.conda-lock/linux_amd64-bd-4b0e1bf122b4b674_1.txt
+    linux/arm64:
+      lock_file: modules/local/phyclone/.conda-lock/linux_arm64-bd-3888a7be1a2a7fbf_1.txt
