@@ -30,8 +30,10 @@ process CNVPYTOR {
     cnvpytor -root ${prefix}.pytor -j ${task.cpus} -baf ${bin_size}
     cnvpytor -root ${prefix}.pytor -j ${task.cpus} -his ${bin_size}
     cnvpytor -root ${prefix}.pytor -j ${task.cpus} -call combined ${bin_size} > ${prefix}.cnvpytor.tsv
-    cnvpytor -root ${prefix}.pytor -view ${bin_size}
 
+    printf 'set print_filename ${prefix}.cnvpytor.vcf\\nprint calls\\n' \\
+        | cnvpytor -root ${prefix}.pytor -view ${bin_size}
+    
     """
 
     stub:

@@ -24,7 +24,7 @@ process SPECIMMUNE_TYPING {
     prefix     = task.ext.prefix ?: "${meta.id}"
     result     = resultName(prefix, gene_class)
     def hg38_fasta = (hg38 instanceof List ? hg38 : [hg38]).find { f -> f && f.name ==~ /.*\.(fa|fasta|fna)$/ }
-    def hg38_arg   = hg38_fasta && gene_class == 'IG_TR' ? "--hg38 ${hg38_fasta}" : ''
+    def hg38_arg   = hg38_fasta && gene_class in ['IG_TR', 'CYP'] ? "--hg38 ${hg38_fasta}" : ''
     """
     specimmune \\
         -r ${fastq} \\
