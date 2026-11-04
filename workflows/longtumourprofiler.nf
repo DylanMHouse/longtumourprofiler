@@ -446,13 +446,22 @@ workflow LONGTUMOURPROFILER {
         normal: meta.type == 'germline'
     }
 
+    def ch_tumour_keyed = ch_samples_by_type.tumour
+        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_normal_keyed = ch_samples_by_type.normal
+        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+
     // Pair each tumour with its germline sample: [ tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ]
-    def ch_tumour_normal_input = ch_samples_by_type.tumour
-        .join(ch_samples_by_type.normal, by: { meta, _bam, _bai -> meta.patient })
+    def ch_tumour_normal_input = ch_tumour_keyed
+        .join(ch_normal_keyed)
+        .map { _patient, tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ->
+            [tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai]
+        }
 
     BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC(
         ch_tumour_normal_input,
-	ch_fasta_fai)
+        ch_fasta_fai,
+    )
 
     emit:
     multiqc_report = ch_multiqc_report

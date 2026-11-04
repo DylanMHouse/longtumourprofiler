@@ -39,9 +39,7 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
 
     PARABRICKS_DEEPVARIANT(
         ch_deepvariant_input,
-        ch_fasta_fai,
-        [[], []],
-        [[], []]
+        ch_fasta_fai.map { meta, fasta, _fai -> [meta, fasta] }
     )
 
     emit:
