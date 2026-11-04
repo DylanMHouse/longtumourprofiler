@@ -12,7 +12,7 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
 
     ch_clairs_input = ch_tumour_normal
         .map { tumour_meta, tumour_bam, tumour_bai, _normal_meta, normal_bam, normal_bai ->
-            [tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai, 'ont']
+            [tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai, 'ont_r10_dorado_sup_5khz_ssrs']
         }
 
     CLAIRS(
@@ -40,6 +40,8 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
     PARABRICKS_DEEPVARIANT(
         ch_deepvariant_input,
         ch_fasta_fai,
+        [[], []],
+        [[], []]
     )
 
     emit:
