@@ -1,50 +1,66 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "bamcallsomaticclairsdeepsomatic"
-## TODO nf-core: Add a description of the subworkflow and list keywords
-description: Sort SAM/BAM/CRAM file
+description: Call somatic small variants from a matched tumour-normal BAM pair with ClairS, DeepSomatic and DeepVariant
 keywords:
-  - sort
-  - bam
-  - sam
-  - cram
-## TODO nf-core: Add a list of the modules and/or subworkflows used in the subworkflow
+  - somatic
+  - variant calling
+  - clairs
+  - deepsomatic
+  - deepvariant
 components:
-  - samtools/sort
-  - samtools/index
-## TODO nf-core: List all of the channels used as input with a description and their structure
+  - clairs
+  - deepsomatic
+  - parabricks/deepvariant
 input:
-  - ch_bam:
+  - ch_tumour_normal:
       type: file
       description: |
-        The input channel containing the BAM/CRAM/SAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.{bam/cram/sam}"
-## TODO nf-core: List all of the channels used as output with a descriptions and their structure
-output:
-  - bam:
-      type: file
-      description: |
-        Channel containing BAM files
-        Structure: [ val(meta), path(bam) ]
+        Paired tumour and normal BAM files with their indexes
+        Structure: [ val(tumour_meta), path(tumour_bam), path(tumour_bai), val(normal_meta), path(normal_bam), path(normal_bai) ]
       pattern: "*.bam"
-  - bai:
+  - ch_fasta:
       type: file
       description: |
-        Channel containing indexed BAM (BAI) files
-        Structure: [ val(meta), path(bai) ]
-      pattern: "*.bai"
-  - csi:
+        Reference genome
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+  - ch_fai:
       type: file
       description: |
-        Channel containing CSI files
-        Structure: [ val(meta), path(csi) ]
-      pattern: "*.csi"
-  - versions:
+        Index of the reference genome
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
+output:
+  - clairs_vcf:
       type: file
       description: |
-        File containing software versions
-        Structure: [ path(versions.yml) ]
-      pattern: "versions.yml"
+        Somatic variant calls from ClairS
+        Structure: [ val(meta), path(vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - clairs_tbi:
+      type: file
+      description: |
+        Index of the ClairS variant calls
+        Structure: [ val(meta), path(vcf.gz.tbi) ]
+      pattern: "*.vcf.gz.tbi"
+  - deepsomatic_vcf:
+      type: file
+      description: |
+        Somatic variant calls from DeepSomatic
+        Structure: [ val(meta), path(vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - deepsomatic_tbi:
+      type: file
+      description: |
+        Index of the DeepSomatic variant calls
+        Structure: [ val(meta), path(vcf.gz.tbi) ]
+      pattern: "*.vcf.gz.tbi"
+  - deepvariant_vcf:
+      type: file
+      description: |
+        Variant calls from DeepVariant
+        Structure: [ val(meta), path(vcf.gz) ]
+      pattern: "*.vcf.gz"
 authors:
   - "@DylanMHouse"
 maintainers:

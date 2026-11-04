@@ -23,6 +23,8 @@ include { STRDUST } from '../modules/nf-core/strdust/main'
 include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
 
+include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
+
 
 include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -436,13 +438,21 @@ workflow LONGTUMOURPROFILER {
     Note: If the user wishes to run only profiling, please ensure you have phased BAM, coverage
 
 
-    SOMATIC CALLS WITH CLAIRS AND DEEPSOMATIC
+    SOMATIC CALLS WITH CLAIRS, DEEPSOMATIC AND DEEPVARIANT
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    def ch_tumour_normal_input = 
-        
-    
+    def ch_samples_by_type = ch_input_bam.branch { meta, _bam, _bai ->
+        tumour: meta.type == 'tumour'
+        normal: meta.type == 'germline'
+    }
 
+    // Pair each tumour with its germline sample: [ tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ]
+    def ch_tumour_normal_input = ch_samples_by_type.tumour
+        .join(ch_samples_by_type.normal, by: { meta, _bam, _bai -> meta.patient })
+
+    BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC(
+        ch_tumour_normal_input,
+	ch_fasta_fai)
 
     emit:
     multiqc_report = ch_multiqc_report
