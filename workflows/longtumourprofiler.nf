@@ -429,6 +429,20 @@ workflow LONGTUMOURPROFILER {
         }
     )
     ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> report }
+    
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Tumour-Normal profiler Workflow.
+    Note: If the user wishes to run only profiling, please ensure you have phased BAM, coverage
+
+
+    SOMATIC CALLS WITH CLAIRS AND DEEPSOMATIC
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    def ch_tumour_normal_input = 
+        
+    
+
 
     emit:
     multiqc_report = ch_multiqc_report
