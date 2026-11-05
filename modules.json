@@ -5,6 +5,11 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "ascat": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
                     "bcftools/merge": {
                         "branch": "master",
                         "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
@@ -145,7 +150,12 @@
                         "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
                         "installed_by": ["modules"]
                     },
-                    "severus": {
+                    "savana/classify": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
+                    "savana/cna": {
                         "branch": "master",
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
                         "installed_by": ["modules"]

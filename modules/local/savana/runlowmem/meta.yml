@@ -1,0 +1,99 @@
+name: "savana_runlowmem"
+description: write your description here
+keywords:
+  - sort
+  - example
+  - genomics
+tools:
+  ## TODO nf-core: Add a description and other details for the software below
+  - "savana":
+      description: "SAVANA: a somatic structural variant caller for long-read data."
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "https://github.com/cortes-ciriano-lab/savana"
+      doi: ""
+      licence: ["Apache-2.0"]
+      identifier: null
+
+input:
+  ### TODO nf-core: Add a description of all of the variables used as input
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Sorted BAM/CRAM/SAM file
+        pattern: "*.{bam,cram,sam}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_2573" # CRAM
+          - edam: "http://edamontology.org/format_3462" # SAM
+
+output:
+  ### TODO nf-core: Add a description of all of the variables used as output
+  bam:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.bam":
+          type: file
+          description: Sorted BAM/CRAM/SAM file
+          pattern: "*.{bam,cram,sam}"
+          ontologies:
+            - edam: "http://edamontology.org/format_2572" # BAM
+            - edam: "http://edamontology.org/format_2573" # CRAM
+            - edam: "http://edamontology.org/format_3462" # SAM
+  versions_savana:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "savana":
+          type: string
+          description: The name of the tool
+      - "savana --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - savana:
+          type: string
+          description: The name of the tool
+      - savana --version:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/savana:1.3.8--9ae333d36c906f2e
+      build_id: bd-9ae333d36c906f2e_1
+      scan_id: sc-72a9643f62d15803_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/savana:1.3.8--46a76eec8d9f1684
+      build_id: bd-46a76eec8d9f1684_1
+      scan_id: sc-8076c6783f95d948_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/savana:1.3.8--012590684bde4f6f
+      build_id: bd-012590684bde4f6f_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/632dd754c4bdc8b682b7594323684ddc435a51775c420fd11986dd83686d51c8/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/savana:1.3.8--c8498150958a80f8
+      build_id: bd-c8498150958a80f8_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/1a/1abeb8e8da85fa5728cf888f18798bc58d8dd680f4c3cf379a5abdc2a2538ed8/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/savana/runlowmem/.conda-lock/linux_amd64-bd-9ae333d36c906f2e_1.txt
+    linux/arm64:
+      lock_file: modules/local/savana/runlowmem/.conda-lock/linux_arm64-bd-46a76eec8d9f1684_1.txt
