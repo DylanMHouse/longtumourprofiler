@@ -119,6 +119,29 @@ output:
           description: Index of the compressed somatic VCF file
           pattern: "${prefix}.vcf.gz.tbi"
           ontologies: []
+  indel_vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}.indel.vcf.gz:
+          type: file
+          description: Compressed somatic indel VCF file
+          pattern: "${prefix}.indel.vcf.gz"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+  indel_tbi:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}.indel.vcf.gz.tbi:
+          type: file
+          description: Index of the compressed somatic indel VCF file
+          pattern: "${prefix}.indel.vcf.gz.tbi"
+          ontologies: []
   versions_clairs:
     - - ${task.process}:
           type: string

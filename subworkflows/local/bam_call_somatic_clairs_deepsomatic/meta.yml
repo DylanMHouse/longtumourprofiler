@@ -9,6 +9,7 @@ keywords:
   - deepvariant
 components:
   - clairs
+  - bcftools/merge
   - deepsomatic
   - parabricks/deepvariant
 input:
@@ -18,29 +19,23 @@ input:
         Paired tumour and normal BAM files with their indexes
         Structure: [ val(tumour_meta), path(tumour_bam), path(tumour_bai), val(normal_meta), path(normal_bam), path(normal_bai) ]
       pattern: "*.bam"
-  - ch_fasta:
+  - ch_fasta_fai:
       type: file
       description: |
-        Reference genome
-        Structure: [ val(meta), path(fasta) ]
+        Reference genome with its index
+        Structure: [ val(meta), path(fasta), path(fai) ]
       pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
-  - ch_fai:
-      type: file
-      description: |
-        Index of the reference genome
-        Structure: [ val(meta), path(fai) ]
-      pattern: "*.fai"
 output:
   - clairs_vcf:
       type: file
       description: |
-        Somatic variant calls from ClairS
+        Merged SNV and indel calls from ClairS
         Structure: [ val(meta), path(vcf.gz) ]
       pattern: "*.vcf.gz"
   - clairs_tbi:
       type: file
       description: |
-        Index of the ClairS variant calls
+        Index of the merged ClairS calls
         Structure: [ val(meta), path(vcf.gz.tbi) ]
       pattern: "*.vcf.gz.tbi"
   - deepsomatic_vcf:
