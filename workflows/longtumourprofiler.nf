@@ -351,7 +351,9 @@ workflow LONGTUMOURPROFILER {
             SAMTOOLS_FAIDX.out.fai.first(),
             params.longphase_modcall,
         )
-        ch_str_input = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
+        
+
+        ch_phased_bam = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
     }
 
     /*
@@ -394,7 +396,7 @@ workflow LONGTUMOURPROFILER {
     // Runs on the haplotagged BAM when --phasing, as in the shell workflow
     if (params.strdust) {
         STRDUST(
-            ch_str_input,
+            ch_phased_bam,
             ch_fasta,
             SAMTOOLS_FAIDX.out.fai.first(),
             ch_str_bed,
@@ -441,11 +443,12 @@ workflow LONGTUMOURPROFILER {
     SOMATIC CALLS WITH CLAIRS, DEEPSOMATIC AND DEEPVARIANT
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    def ch_samples_by_type = ch_input_bam.branch { meta, _bam, _bai ->
+    def ch_samples_by_type = ch_phased_bam.branch { meta, _bam, _bai ->
         tumour: meta.type == 'tumour'
         normal: meta.type == 'germline'
     }
 
+    // Create two independent channels to separate normal vs tumour. 
     def ch_tumour_keyed = ch_samples_by_type.tumour
         .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
     def ch_normal_keyed = ch_samples_by_type.normal
