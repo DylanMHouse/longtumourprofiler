@@ -5,6 +5,11 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "bcftools/merge": {
+                        "branch": "master",
+                        "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
+                        "installed_by": ["modules"]
+                    },
                     "bcftools/query": {
                         "branch": "master",
                         "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
@@ -134,6 +139,11 @@
                         "branch": "master",
                         "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
                         "installed_by": ["bam_stats_samtools"]
+                    },
+                    "samtools/view": {
+                        "branch": "master",
+                        "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
+                        "installed_by": ["modules"]
                     },
                     "severus": {
                         "branch": "master",

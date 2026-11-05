@@ -9,7 +9,7 @@ include { paramsSummaryMap } from 'plugin/nf-schema'
 
 include { MOSDEPTH } from '../modules/nf-core/mosdepth/main'
 include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools'
-
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_PREPARE_SV } from '../modules/nf-core/samtools/view/main'
 include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_INPUT } from '../modules/nf-core/samtools/index/main'
 include { FASTQ_ALIGN_MINIMAP2 } from '../subworkflows/local/fastq_align_minimap2'
@@ -338,7 +338,6 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    def ch_str_input = ch_input_bam
     if (params.phasing) {
         // Co-phase each sample's SNVs and Sniffles SVs (and 5mC calls with --longphase_modcall)
         def ch_phase_input = ch_input_bam
@@ -465,6 +464,16 @@ workflow LONGTUMOURPROFILER {
         ch_tumour_normal_input,
         ch_fasta_fai,
     )
+
+    // Preparing bam input for SV calls. Removes tags
+    SAMTOOLS_VIEW_PREPARE_SV(
+        ch_phased_bam,
+        ch_fasta_fai,
+        [[], []],
+        [[], []],
+        'bai'
+    )
+
 
     emit:
     multiqc_report = ch_multiqc_report
