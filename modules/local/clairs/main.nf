@@ -11,6 +11,8 @@ process CLAIRS {
     output:
     tuple val(meta), path("${prefix}.vcf.gz"), emit: vcf
     tuple val(meta), path("${prefix}.vcf.gz.tbi"), emit: tbi
+    tuple val(meta), path("${prefix}.indel.vcf.gz"), emit: indel_vcf, optional: true
+    tuple val(meta), path("${prefix}.indel.vcf.gz.tbi"), emit: indel_tbi, optional: true
     tuple val("${task.process}"), val('clairs'), eval("run_clairs --version | sed 's/.* //'"), emit: versions_clairs, topic: versions
 
     when:
@@ -31,6 +33,7 @@ process CLAIRS {
         --platform ${platform} \\
         --output_dir . \\
         --output_prefix ${prefix} \\
+        --indel_output_prefix ${prefix}.indel \\
         --sample_name ${meta.id} \\
         ${args}
     """
@@ -40,8 +43,16 @@ process CLAIRS {
         error("CLAIRS module does not support Conda. Please use Docker / Singularity / Podman instead.")
     }
     prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: ''
+    def indel_stub = args.contains('--enable_indel_calling')
+        ? """
+        echo "" | gzip > ${prefix}.indel.vcf.gz
+        touch ${prefix}.indel.vcf.gz.tbi
+        """
+        : ''
     """
     echo "" | gzip > ${prefix}.vcf.gz
     touch ${prefix}.vcf.gz.tbi
+    ${indel_stub}
     """
 }
