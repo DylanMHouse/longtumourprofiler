@@ -84,14 +84,14 @@ containers:
       build_id: bd-c74c8a860e54842f_1
       scan_id: sc-cdd6768f83e5543d_1
   singularity:
-    linux/amd64:
-      name: oras://community.wave.seqera.io/library/severus:1.7--f3bbcf2cfbeca3f4
-      build_id: bd-f3bbcf2cfbeca3f4_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8f/8f5573c761d20a58090348809910259b11de9d59d1605213f445088ce9037daa/data
     linux/arm64:
       name: oras://community.wave.seqera.io/library/severus:1.7--8c5be9f03b89c2fe
       build_id: bd-8c5be9f03b89c2fe_1
       https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/15/153d00f9f99b0f5052a116fdff5accad3bb41fb7418716dda5c5cce08b174d90/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/severus:1.7--f3bbcf2cfbeca3f4
+      build_id: bd-f3bbcf2cfbeca3f4_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8f/8f5573c761d20a58090348809910259b11de9d59d1605213f445088ce9037daa/data
   conda:
     linux/amd64:
       lock_file: modules/local/severuslowmem/.conda-lock/linux_amd64-bd-2e094c82f1c48f4e_1.txt
