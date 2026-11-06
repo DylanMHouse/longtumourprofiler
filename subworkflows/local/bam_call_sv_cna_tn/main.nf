@@ -16,10 +16,14 @@ workflow BAM_CALL_SV_CNA_TN {
             [tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai]
         }
 
+    def ch_savana_contigs = channel.fromPath(params.savana_contigs, checkIfExists: true)
+        .map { savana_contigs -> tuple([id: "contigs"], savana_contigs)  }
+
+
     SAVANA_RUN_LOWMEM(
         ch_savana_input,
         ch_fasta_fai,
-        [[], []],
+        ch_savana_contigs,
     )
 
     SAVANA_CLASSIFY(
