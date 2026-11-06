@@ -1,83 +1,79 @@
-// TODO nf-core: If in doubt look at other nf-core/modules to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/modules/nf-core/
-//               You can also ask for help via your pull request or on the #modules channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A module file SHOULD only define input and output files as command-line parameters.
-//               All other parameters MUST be provided using the "task.ext" directive, see here:
-//               https://www.nextflow.io/docs/latest/process.html#ext
-//               where "task.ext" is a string.
-//               Any parameters that need to be evaluated in the context of a particular sample
-//               e.g. single-end/paired-end data MUST also be defined and evaluated appropriately.
-// TODO nf-core: Software that can be piped together SHOULD be added to separate module files
-//               unless there is a run-time, storage advantage in implementing in this way
-//               e.g. it's ok to have a single module for bwa to output BAM instead of SAM:
-//                 bwa mem | samtools view -B -T ref.fasta
-// TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
-//               list (`[]`) instead of a file can be used to work around this issue.
-
 process SEVERUS_LOWMEM {
-    tag "$meta.id"
-    label 'process_high'
+    tag "${meta.id}"
+    label 'process_medium'
 
-    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
         ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8f/8f5573c761d20a58090348809910259b11de9d59d1605213f445088ce9037daa/data'
         : 'community.wave.seqera.io/library/severus:1.7--2e094c82f1c48f4e'}"
 
-    input:// TODO nf-core: Where applicable all sample-specific information e.g. "id", "single_end", "read_group"
-    //               MUST be provided as an input via a Groovy Map called "meta".
-    //               This information may not be required in some instances e.g. indexing reference genome files:
-    //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
-    // TODO nf-core: Where applicable please provide/convert compressed files as input/output
-    //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    tuple val(meta), path(bam)
+    input:
+    tuple val(meta), path(target_input), path(target_index), path(control_input), path(control_index), path(vcf)
+    tuple val(meta2), path(bed)
 
     output:
-    // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
-    tuple val(meta), path("*.bam"), emit: bam
-    // TODO nf-core: List additional required output channels/values here
-    // TODO nf-core: Update the command here to obtain the version number of the software used in this module
-    // TODO nf-core: If multiple software packages are used in this module, all MUST be added here
-    //               by copying the line below and replacing the current tool with the extra tool(s)
-    tuple val("${task.process}"), val('severuslowmem'), eval("severuslowmem --version"), topic: versions, emit: versions_severuslowmem
+    tuple val(meta), path("${prefix}/severus.log"), emit: log
+    tuple val(meta), path("${prefix}/read_qual.txt"), emit: read_qual
+    tuple val(meta), path("${prefix}/breakpoints_double.csv"), emit: breakpoints_double
+    tuple val(meta), path("${prefix}/read_alignments"), emit: read_alignments, optional: true
+    tuple val(meta), path("${prefix}/read_ids.csv"), emit: read_ids, optional: true
+    tuple val(meta), path("${prefix}/severus_collaped_dup.bed"), emit: collapsed_dup, optional: true
+    tuple val(meta), path("${prefix}/severus_LOH.bed"), emit: loh, optional: true
+    tuple val(meta), path("${prefix}/all_SVs/severus_all.vcf"), emit: all_vcf, optional: true
+    tuple val(meta), path("${prefix}/all_SVs/breakpoints_clusters_list.tsv"), emit: all_breakpoints_clusters_list, optional: true
+    tuple val(meta), path("${prefix}/all_SVs/breakpoints_clusters.tsv"), emit: all_breakpoints_clusters, optional: true
+    tuple val(meta), path("${prefix}/all_SVs/plots/severus*.html"), emit: all_plots, optional: true
+    tuple val(meta), path("${prefix}/somatic_SVs/severus_somatic.vcf"), emit: somatic_vcf, optional: true
+    tuple val(meta), path("${prefix}/somatic_SVs/breakpoints_clusters_list.tsv"), emit: somatic_breakpoints_clusters_list, optional: true
+    tuple val(meta), path("${prefix}/somatic_SVs/breakpoints_clusters.tsv"), emit: somatic_breakpoints_clusters, optional: true
+    tuple val(meta), path("${prefix}/somatic_SVs/plots/severus*.html"), emit: somatic_plots, optional: true
+    tuple val("${task.process}"), val('severus'), eval("severus --version"), emit: versions_severus, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO nf-core: Where possible, a command MUST be provided to obtain the version number of the software e.g. 1.10
-    //               If the software is unable to output a version number on the command-line then it can be manually specified
-    //               e.g. https://github.com/nf-core/modules/blob/master/modules/nf-core/homer/annotatepeaks/main.nf
-    //               Each software used MUST provide the software name and version number in the YAML version file (versions.yml)
-    // TODO nf-core: It MUST be possible to pass additional parameters to the tool as a command-line string via the "task.ext.args" directive
-    // TODO nf-core: If the tool supports multi-threading then you MUST provide the appropriate parameter
-    //               using the Nextflow "task" variable e.g. "--threads $task.cpus"
-    // TODO nf-core: Please replace the example samtools command below with your module's command
-    // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
+    prefix = task.ext.prefix ?: "${meta.id}"
+
+    def control = control_input ? "--control-bam ${control_input}" : ""
+    def vntr_bed = bed ? "--vntr-bed ${bed}" : ""
+    def phasing_vcf = vcf ? "--phasing-vcf ${vcf}" : ""
     """
-    severuslowmem \\
-        $args \\
-        -@ $task.cpus \\
-        -o ${prefix}.bam \\
-        $bam
+    severus_lowmem.py \\
+        ${args} \\
+        --threads ${task.cpus} \\
+        --target-bam ${target_input} \\
+        ${vntr_bed} \\
+        ${control} \\
+        ${phasing_vcf} \\
+        --out-dir ${prefix} \\
+        --tmp-dir "\${TMPDIR:-/tmp}/severus_tmp_${prefix}_${task.attempt}"
     """
 
     stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO nf-core: A stub section should mimic the execution of the original module as best as possible
-    //               Have a look at the following examples:
-    //               Simple example: https://github.com/nf-core/modules/blob/624977dfaf562211e68a8a868ca80acc8461f1ac/modules/nf-core/cutadapt/main.nf#L34-L46
-    //               Complex example: https://github.com/nf-core/modules/blob/88d43dad73a675e66bff49ebb57fe657a5909018/modules/nf-core/bedtools/split/main.nf#L32-L43
-    // TODO nf-core: If the module doesn't use arguments ($args), you SHOULD remove:
-    //               - The definition of args `def args = task.ext.args ?: ''` above.
-    //               - The use of the variable in the script `echo $args ` below.
+    prefix = task.ext.prefix ?: "${meta.id}"
+
     """
-    echo $args
-    
-    touch ${prefix}.bam
+    mkdir -p ${prefix}/all_SVs/plots
+    mkdir -p ${prefix}/somatic_SVs/plots
+
+    touch ${prefix}/severus_collaped_dup.bed
+    touch ${prefix}/severus.log
+    touch ${prefix}/severus_LOH.bed
+    touch ${prefix}/read_alignments
+    touch ${prefix}/read_ids.csv
+    touch ${prefix}/read_qual.txt
+    touch ${prefix}/breakpoints_double.csv
+    touch ${prefix}/all_SVs/severus_all.vcf
+    touch ${prefix}/all_SVs/breakpoints_clusters_list.tsv
+    touch ${prefix}/all_SVs/breakpoints_clusters.tsv
+    touch ${prefix}/all_SVs/plots/severus_0.html
+    touch ${prefix}/all_SVs/plots/severus_1.html
+    touch ${prefix}/somatic_SVs/severus_somatic.vcf
+    touch ${prefix}/somatic_SVs/breakpoints_clusters_list.tsv
+    touch ${prefix}/somatic_SVs/breakpoints_clusters.tsv
+    touch ${prefix}/somatic_SVs/plots/severus_0.html
+    touch ${prefix}/somatic_SVs/plots/severus_1.html
     """
 }

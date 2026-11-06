@@ -24,6 +24,7 @@ include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
+include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
 
 
 include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -465,15 +466,45 @@ workflow LONGTUMOURPROFILER {
         ch_fasta_fai,
     )
 
-    // Preparing bam input for SV calls. Removes tags
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    STRUCTURAL VARIANTS AND COPY NUMBER ALTERATIONS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // Preparing BAM input for SV calls. Removes tags
     SAMTOOLS_VIEW_PREPARE_SV(
         ch_phased_bam,
         ch_fasta_fai,
         [[], []],
         [[], []],
-        'bai'
+        'bai',
     )
 
+    def ch_prepare_bamSV = SAMTOOLS_VIEW_PREPARE_SV.out.bam
+        .join(SAMTOOLS_VIEW_PREPARE_SV.out.bai, by: 0)
+
+    def ch_prepare_bamSV_by_type = ch_prepare_bamSV.branch { meta, _bam, _bai ->
+        tumour: meta.type == 'tumour'
+        normal: meta.type == 'germline'
+    }
+
+    def ch_prepare_bamSV_tumour = ch_prepare_bamSV_by_type.tumour
+        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_prepare_bamSV_normal = ch_prepare_bamSV_by_type.normal
+        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+
+    def ch_tumour_normal_forSV = ch_prepare_bamSV_tumour
+        .join(ch_prepare_bamSV_normal)
+        .map { _patient, tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ->
+            [tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai]
+        }
+
+    BAM_CALL_SV_CNA_TN(
+        ch_tumour_normal_forSV,
+        ch_fasta_fai,
+    )
 
     emit:
     multiqc_report = ch_multiqc_report

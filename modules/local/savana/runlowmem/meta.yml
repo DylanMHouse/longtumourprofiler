@@ -1,74 +1,141 @@
 name: "savana_runlowmem"
-description: write your description here
+description: "Identify and cluster SV breakpoints from long-read alignments with the memory-bounded SAVANA driver."
 keywords:
-  - sort
-  - example
+  - structural variants
+  - long read
   - genomics
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
   - "savana":
-      description: "SAVANA: a somatic structural variant caller for long-read data."
-      homepage: "None"
-      documentation: "None"
+      description: "SAVANA: a somatic structural variant and copy-number caller for
+        long-read data."
+      homepage: "https://github.com/cortes-ciriano-lab/savana"
+      documentation: "https://github.com/cortes-ciriano-lab/savana"
       tool_dev_url: "https://github.com/cortes-ciriano-lab/savana"
-      doi: ""
-      licence: ["Apache-2.0"]
-      identifier: null
-
+      doi: "10.1038/s41592-025-02708-0"
+      licence:
+        - "Apache-2.0"
+      identifier: ""
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - bam:
+    - tumour:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Tumour BAM/CRAM file
+        pattern: "*.{bam,cram}"
         ontologies:
           - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
-
+          - edam: "http://edamontology.org/format_3462" # CRAM
+    - tumour_index:
+        type: file
+        description: Tumour BAM/CRAM index
+        pattern: "*.{bai,crai}"
+        ontologies: []
+    - normal:
+        type: file
+        description: Normal BAM/CRAM file
+        pattern: "*.{bam,cram}"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+          - edam: "http://edamontology.org/format_3462" # CRAM
+    - normal_index:
+        type: file
+        description: Normal BAM/CRAM index
+        pattern: "*.{bai,crai}"
+        ontologies: []
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing reference information
+          e.g. `[ id:'hg38' ]`
+    - ref:
+        type: file
+        description: Reference genome FASTA file used to align tumour and normal
+          BAM/CRAM files
+        pattern: "*.{fa,fasta}"
+        ontologies:
+          - edam: "http://edamontology.org/format_1929" # FASTA
+    - ref_index:
+        type: file
+        description: Reference FASTA index
+        pattern: "*.fai"
+        ontologies: []
+  - - meta3:
+        type: map
+        description: |
+          Groovy Map containing contigs file information
+          e.g. `[ id:'contigs' ]`
+    - contigs:
+        type: file
+        description: Optional file listing the contigs to analyse, one contig per line. All contigs in the BAM files are analysed when not given.
+        pattern: "*.txt"
+        optional: true
+        ontologies:
+          - edam: "http://edamontology.org/format_2330" # TXT
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  sv_breakpoints_vcf:
     - - meta:
           type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. `[ id:'sample1' ]`
-      - "*.bam":
+          description: Sample information
+      - ${prefix}.sv_breakpoints.vcf:
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
+          description: VCF file containing raw SV breakpoints
+          pattern: "*.sv_breakpoints.vcf"
           ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
+            - edam: "http://edamontology.org/format_3016" # VCF
+  sv_breakpoints_bedpe:
+    - - meta:
+          type: map
+          description: Sample information
+      - ${prefix}.sv_breakpoints.bedpe:
+          type: file
+          description: BEDPE file containing SV breakpoints
+          pattern: "*.sv_breakpoints.bedpe"
+          ontologies:
+            - edam: "http://edamontology.org/format_3003" # BED
+  sv_breakpoints_read_support:
+    - - meta:
+          type: map
+          description: Sample information
+      - ${prefix}.sv_breakpoints_read_support.tsv:
+          type: file
+          description: TSV file containing read support information for each SV breakpoint
+          pattern: "*.sv_breakpoints_read_support.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  inserted_sequences:
+    - - meta:
+          type: map
+          description: Sample information
+      - ${prefix}.inserted_sequences.fa:
+          type: file
+          description: FASTA file containing inserted sequences
+          pattern: "*.inserted_sequences.fa"
+          ontologies:
+            - edam: "http://edamontology.org/format_1929" # FASTA
   versions_savana:
-    - - "${task.process}":
+    - - ${task.process}:
           type: string
-          description: The name of the process
-      - "savana":
+          description: Process name
+      - savana:
           type: string
-          description: The name of the tool
-      - "savana --version":
+          description: Tool version
+      - python -c "import importlib.metadata as m; print(m.version('savana'))":
           type: eval
-          description: The expression to obtain the version of the tool
-
+          description: Command to obtain the version of the tool
 topics:
   versions:
     - - ${task.process}:
           type: string
-          description: The name of the process
+          description: Process name
       - savana:
           type: string
-          description: The name of the tool
-      - savana --version:
+          description: Tool version
+      - python -c "import importlib.metadata as m; print(m.version('savana'))":
           type: eval
-          description: The expression to obtain the version of the tool
+          description: Command to obtain the version of the tool
 authors:
   - "@DylanMHouse"
 maintainers:

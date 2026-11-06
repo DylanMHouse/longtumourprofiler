@@ -1,72 +1,232 @@
 name: "severuslowmem"
-description: write your description here
+description: Memory-bounded somatic structural variation calling for long reads with Severus
 keywords:
-  - sort
-  - example
-  - genomics
+  - structural
+  - variation
+  - somatic
+  - germline
+  - long-read
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
-  - "severuslowmem":
+  - "severus":
       description: "A tool for somatic structural variant calling using long reads"
-      homepage: "None"
-      documentation: "None"
-      tool_dev_url: "None"
-      doi: ""
-      licence: ["BSD-3-clause"]
-      identifier: null
-
+      homepage: "https://github.com/KolmogorovLab/Severus"
+      documentation: "https://github.com/KolmogorovLab/Severus"
+      tool_dev_url: "https://github.com/KolmogorovLab/Severus"
+      doi: "10.1101/2024.03.22.24304756"
+      licence:
+        - "BSD-3-clause"
+      identifier: ""
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
-          e.g. `[ id:'sample1' ]`
-    - bam:
+          e.g. `[ id:'sample1', single_end:false ]`
+    - target_input:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
-        ontologies:
-          - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
-
+        description: Path to one or multiple target BAM/CRAM files (e.g. tumour, must be indexed)
+        pattern: "*.{bam,cram}"
+        ontologies: []
+    - target_index:
+        type: file
+        description: Path to one or multiple target BAM/CRAM index files
+        pattern: "*.{bai,crai,csi}"
+        ontologies: []
+    - control_input:
+        type: file
+        description: Path to the control BAM/CRAM file (e.g. normal, must be indexed)
+        pattern: "*.{bam,cram}"
+        ontologies: []
+    - control_index:
+        type: file
+        description: Path to the control BAM/CRAM file index
+        pattern: "*.{bai,crai,csi}"
+        ontologies: []
+    - vcf:
+        type: file
+        description: Path to a VCF file used for phasing, if using haplotype-specific SV calling
+        pattern: "*.{vcf,vcf.gz}"
+        ontologies: []
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing tandem repeat regions information
+          e.g. `[ id:'hg38' ]`
+    - bed:
+        type: file
+        description: Path to a BED file for tandem repeat regions, which must be ordered
+        pattern: "*.bed"
+        ontologies: []
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  log:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
-            e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - ${prefix}/severus.log:
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
-          ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
-  versions_severuslowmem:
-    - - "${task.process}":
+          description: Log file
+          pattern: "${prefix}/severus.log"
+          ontologies: []
+  read_qual:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/read_qual.txt:
+          type: file
+          description: Text file containing read quality information
+          pattern: "${prefix}/read_qual.txt"
+          ontologies: []
+  breakpoints_double:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/breakpoints_double.csv:
+          type: file
+          description: Detailed information about the detected breakpoints for all samples, intended for advanced users
+          pattern: "${prefix}/breakpoints_double.csv"
+          ontologies: []
+  read_alignments:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/read_alignments:
+          type: file
+          description: Directory containing read alignments in BAM format for all samples, intended for advanced users
+          pattern: "${prefix}/read_alignments"
+          ontologies: []
+  read_ids:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/read_ids.csv:
+          type: file
+          description: Supporting read IDs for each SV
+          pattern: "${prefix}/read_ids.csv"
+          ontologies: []
+  collapsed_dup:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/severus_collaped_dup.bed:
+          type: file
+          description: BED file containing collapsed duplications
+          pattern: "${prefix}/severus_collaped_dup.bed"
+          ontologies: []
+  loh:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/severus_LOH.bed:
+          type: file
+          description: BED file containing loss of heterozygosity information
+          pattern: "${prefix}/severus_LOH.bed"
+          ontologies: []
+  all_vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/all_SVs/severus_all.vcf:
+          type: file
+          description: VCF file containing somatic and germline structural variants
+          pattern: "${prefix}/all_SVs/severus_all.vcf"
+          ontologies: []
+  all_breakpoints_clusters_list:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/all_SVs/breakpoints_clusters_list.tsv:
+          type: file
+          description: TSV file containing a list of all breakpoint clusters
+          pattern: "${prefix}/all_SVs/breakpoints_clusters_list.tsv"
+          ontologies: []
+  all_breakpoints_clusters:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/all_SVs/breakpoints_clusters.tsv:
+          type: file
+          description: TSV file containing meta information in breakpoint clusters
+          pattern: "${prefix}/all_SVs/breakpoints_clusters.tsv"
+          ontologies: []
+  all_plots:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/all_SVs/plots/severus*.html:
+          type: file
+          description: HTML files containing plots for all SVs
+          pattern: "${prefix}/all_SVs/plots/severus*.html"
+          ontologies: []
+  somatic_vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/somatic_SVs/severus_somatic.vcf:
+          type: file
+          description: VCF file containing somatic structural variants
+          pattern: "${prefix}/somatic_SVs/severus_somatic.vcf"
+          ontologies: []
+  somatic_breakpoints_clusters_list:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/somatic_SVs/breakpoints_clusters_list.tsv:
+          type: file
+          description: TSV file containing the full list of somatic breakpoint clusters
+          pattern: "${prefix}/somatic_SVs/breakpoints_clusters_list.tsv"
+          ontologies: []
+  somatic_breakpoints_clusters:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/somatic_SVs/breakpoints_clusters.tsv:
+          type: file
+          description: TSV file containing meta information for somatic breakpoint clusters
+          pattern: "${prefix}/somatic_SVs/breakpoints_clusters.tsv"
+          ontologies: []
+  somatic_plots:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - ${prefix}/somatic_SVs/plots/severus*.html:
+          type: file
+          description: HTML files containing plots for somatic SVs
+          pattern: "${prefix}/somatic_SVs/plots/severus*.html"
+          ontologies: []
+  versions_severus:
+    - - ${task.process}:
           type: string
           description: The name of the process
-      - "severuslowmem":
+      - severus:
           type: string
           description: The name of the tool
-      - "severuslowmem --version":
+      - severus --version:
           type: eval
           description: The expression to obtain the version of the tool
-
 topics:
   versions:
     - - ${task.process}:
           type: string
           description: The name of the process
-      - severuslowmem:
+      - severus:
           type: string
           description: The name of the tool
-      - severuslowmem --version:
+      - severus --version:
           type: eval
           description: The expression to obtain the version of the tool
 authors:
@@ -84,14 +244,14 @@ containers:
       build_id: bd-c74c8a860e54842f_1
       scan_id: sc-cdd6768f83e5543d_1
   singularity:
-    linux/arm64:
-      name: oras://community.wave.seqera.io/library/severus:1.7--8c5be9f03b89c2fe
-      build_id: bd-8c5be9f03b89c2fe_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/15/153d00f9f99b0f5052a116fdff5accad3bb41fb7418716dda5c5cce08b174d90/data
     linux/amd64:
       name: oras://community.wave.seqera.io/library/severus:1.7--f3bbcf2cfbeca3f4
       build_id: bd-f3bbcf2cfbeca3f4_1
       https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8f/8f5573c761d20a58090348809910259b11de9d59d1605213f445088ce9037daa/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/severus:1.7--8c5be9f03b89c2fe
+      build_id: bd-8c5be9f03b89c2fe_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/15/153d00f9f99b0f5052a116fdff5accad3bb41fb7418716dda5c5cce08b174d90/data
   conda:
     linux/amd64:
       lock_file: modules/local/severuslowmem/.conda-lock/linux_amd64-bd-2e094c82f1c48f4e_1.txt
