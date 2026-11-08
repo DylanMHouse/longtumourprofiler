@@ -45,8 +45,8 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
         ch_fasta_fai,
         channel.value([[], []]),
     )
-
-    // TODO add the DeepVariant model through ext.args (--model) in conf/modules.config
+    def ch_deepvariant_vcf = channel.empty()
+    if ('gpu' in workflow.profile.tokenize(',')) {
     ch_deepvariant_input = ch_tumour_normal
         .map { tumour_meta, tumour_bam, tumour_bai, _normal_meta, _normal_bam, _normal_bai ->
             [tumour_meta, tumour_bam, tumour_bai, []]
@@ -56,11 +56,13 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
         ch_deepvariant_input,
         ch_fasta_fai.map { meta, fasta, _fai -> [meta, fasta] }
     )
+    ch_deepvariant_vcf = PARABRICKS_DEEPVARIANT.out.vcf
+    }
 
     emit:
     clairs_vcf        = BCFTOOLS_MERGE.out.vcf             // channel: [ val(meta), path(vcf.gz) ]
     clairs_tbi        = BCFTOOLS_MERGE.out.index           // channel: [ val(meta), path(vcf.gz.tbi) ]
     deepsomatic_vcf   = DEEPSOMATIC.out.vcf                   // channel: [ val(meta), path(vcf.gz) ]
     deepsomatic_tbi   = DEEPSOMATIC.out.vcf_tbi               // channel: [ val(meta), path(vcf.gz.tbi) ]
-    deepvariant_vcf   = PARABRICKS_DEEPVARIANT.out.vcf        // channel: [ val(meta), path(vcf.gz) ]
+    deepvariant_vcf   = ch_deepvariant_vcf
 }
