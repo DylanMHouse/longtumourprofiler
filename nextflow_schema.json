@@ -281,6 +281,7 @@
             "default": "bam",
             "enum": [
                 "bam",
+                "single_ubam",
                 "fastq"
             ],
             "description": "Input read format. bam = unaligned (Dorado) BAM, fastq = fastq.gz"

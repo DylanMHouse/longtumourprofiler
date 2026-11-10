@@ -235,7 +235,7 @@ workflow LONGTUMOURPROFILER {
 
             FASTQ_ALIGN_MINIMAP2(ch_samplesheet, ch_minimap2_ref)
         }
-        else if (params.input_type == 'bam') {
+        else if (params.input_type == 'bam' || params.input_type == 'single_ubam') {
             BAM_CONVERT_FASTQ_QC(ch_samplesheet)
             ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.zip.map { _meta, file -> file })
             ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.txt.map { _meta, file -> file })

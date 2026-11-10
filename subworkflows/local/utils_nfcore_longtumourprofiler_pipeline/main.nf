@@ -26,7 +26,7 @@ SUBWORKFLOW TO INITIALISE PIPELINE
 
 def resolveFiles(sample_id: String, label: String, path_str, samplesheet_dir) {
     // --input_type bam expects unaligned BAMs, aligned_bam one sorted BAM; fastq expects gzipped fastq
-    def exts = params.input_type in ['bam', 'aligned_bam'] ? ['bam'] : ['fastq.gz', 'fq.gz']
+    def exts = params.input_type in ['bam', 'aligned_bam', 'single_ubam'] ? ['bam'] : ['fastq.gz', 'fq.gz']
     def p = file(path_str)
     if (!p.exists() && p.startsWith(workflow.launchDir)) {
         p = samplesheet_dir.resolve(workflow.launchDir.relativize(p).toString())

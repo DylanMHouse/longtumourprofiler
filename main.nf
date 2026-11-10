@@ -57,7 +57,7 @@ workflow NFCORE_LONGTUMOURPROFILER {
         ]
     }
 
-    def valid_input_types = ['fastq', 'bam', 'aligned_bam'] // bam = unaligned (Dorado) BAM; aligned_bam = coordinate-sorted BAM, alignment is skipped
+    def valid_input_types = ['fastq', 'bam', 'aligned_bam', 'single_ubam'] // bam = unaligned (Dorado) BAM; aligned_bam = coordinate-sorted BAM, alignment is skipped
     if (!(params.input_type in valid_input_types)) {
         error("Invalid --input_type '${params.input_type}'. Valid options: ${valid_input_types.join(', ')}")
     }

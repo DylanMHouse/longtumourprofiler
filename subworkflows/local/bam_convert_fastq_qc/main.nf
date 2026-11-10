@@ -17,18 +17,23 @@ workflow BAM_CONVERT_FASTQ_QC {
     ch_txt = channel.empty()
     ch_zip = channel.empty()
 
-    SAMTOOLS_CAT(ch_bam)
+    if (params.input_type == 'bam') {
+        SAMTOOLS_CAT(ch_bam)
 
 
-    SAMTOOLS_FASTQ(
-
-
-        SAMTOOLS_CAT.out.bam,
-        false,
-    )
-
-    ch_fastq = SAMTOOLS_FASTQ.out.other
-
+        SAMTOOLS_FASTQ(
+            SAMTOOLS_CAT.out.bam,
+            false
+        )
+         ch_fastq = SAMTOOLS_FASTQ.out.other
+    }
+    if (params.input_type == 'single_ubam') {
+        SAMTOOLS_FASTQ(
+            ch_bam,
+            false
+        )
+        ch_fastq = SAMTOOLS_FASTQ.out.other
+    }
 
 
     // qc checks for fastq file
