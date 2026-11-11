@@ -425,6 +425,71 @@
         },
         "savana_contigs": {
             "type": "string"
+        },
+        "wakhan": {
+            "type": "boolean",
+            "description": "Call haplotype-specific copy number alterations in tumour-normal pairs with Wakhan. Needs --phasing"
+        },
+        "wakhan_cancer_genes": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "description": "Optional cancer genes TSV for Wakhan's --cancer-genes"
+        },
+        "wakhan_centromere_bed": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed$",
+            "description": "Optional centromere BED for Wakhan's --centromere-bed"
+        },
+        "ascat": {
+            "type": "boolean",
+            "description": "Call allele-specific copy number alterations in tumour-normal pairs with ASCAT. Needs --ascat_alleles and --ascat_loci"
+        },
+        "ascat_alleles": {
+            "type": "string",
+            "format": "path",
+            "exists": true,
+            "description": "Directory of ASCAT allele files"
+        },
+        "ascat_loci": {
+            "type": "string",
+            "format": "path",
+            "exists": true,
+            "description": "Directory of ASCAT loci files"
+        },
+        "ascat_gc": {
+            "type": "string",
+            "format": "path",
+            "exists": true,
+            "description": "Optional GC content file for ASCAT LogR correction"
+        },
+        "ascat_rt": {
+            "type": "string",
+            "format": "path",
+            "exists": true,
+            "description": "Optional replication timing file for ASCAT LogR correction. Only used with --ascat_gc"
+        },
+        "ascat_sex": {
+            "type": "string",
+            "default": "XX",
+            "enum": ["XX", "XY"],
+            "description": "Sex chromosomes of the patient, passed to ASCAT as gender"
+        },
+        "ascat_genome": {
+            "type": "string",
+            "default": "hg38",
+            "enum": ["hg19", "hg38"],
+            "description": "Genome version passed to ASCAT"
+        },
+        "ascat_purity": {
+            "type": "number",
+            "description": "Fix the ASCAT purity (rho) instead of fitting it"
+        },
+        "ascat_ploidy": {
+            "type": "number",
+            "description": "Fix the ASCAT ploidy (psi) instead of fitting it"
         }
     }
 }

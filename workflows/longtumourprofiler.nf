@@ -196,6 +196,38 @@ workflow LONGTUMOURPROFILER {
         error("--cpsr needs --cpsr_refdata (PCGR reference data) and --cpsr_vep_cache (VEP cache directory)")
     }
 
+    if (params.wakhan && !params.phasing) {
+        error("--wakhan needs the LongPhase phased germline SNVs, so it needs --phasing")
+    }
+    if (params.ascat && !(params.ascat_alleles && params.ascat_loci)) {
+        error("--ascat needs --ascat_alleles and --ascat_loci")
+    }
+
+    def ch_wakhan_cancer_genes = params.wakhan_cancer_genes
+        ? channel.fromPath(params.wakhan_cancer_genes, checkIfExists: true).map { genes -> tuple([id: "cancer_genes"], genes) }.first()
+        : channel.value([[:], []])
+
+    def ch_wakhan_centromere_bed = params.wakhan_centromere_bed
+        ? channel.fromPath(params.wakhan_centromere_bed, checkIfExists: true).map { bed -> tuple([id: "centromeres"], bed) }.first()
+        : channel.value([[:], []])
+
+    // ASCAT takes each reference as a directory or a single file
+    def ch_ascat_alleles = params.ascat_alleles
+        ? channel.fromPath(params.ascat_alleles, type: 'any', checkIfExists: true).first()
+        : channel.value([])
+
+    def ch_ascat_loci = params.ascat_loci
+        ? channel.fromPath(params.ascat_loci, type: 'any', checkIfExists: true).first()
+        : channel.value([])
+
+    def ch_ascat_gc = params.ascat_gc
+        ? channel.fromPath(params.ascat_gc, type: 'any', checkIfExists: true).first()
+        : channel.value([])
+
+    def ch_ascat_rt = params.ascat_rt
+        ? channel.fromPath(params.ascat_rt, type: 'any', checkIfExists: true).first()
+        : channel.value([])
+
 
 
 
@@ -339,6 +371,7 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    def ch_phased_snv_vcf = channel.empty()
     if (params.phasing) {
         // Co-phase each sample's SNVs and Sniffles SVs (and 5mC calls with --longphase_modcall)
         def ch_phase_input = ch_input_bam
@@ -354,6 +387,7 @@ workflow LONGTUMOURPROFILER {
         
 
         ch_phased_bam = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
+        ch_phased_snv_vcf = BAM_PHASE_HAPLOTAG_LONGPHASE.out.snv_vcf
     }
 
     /*
@@ -504,6 +538,13 @@ workflow LONGTUMOURPROFILER {
     BAM_CALL_SV_CNA_TN(
         ch_tumour_normal_forSV,
         ch_fasta_fai,
+        ch_phased_snv_vcf.filter { meta, _vcf -> meta.type == 'germline' },
+        ch_wakhan_cancer_genes,
+        ch_wakhan_centromere_bed,
+        ch_ascat_alleles,
+        ch_ascat_loci,
+        ch_ascat_gc,
+        ch_ascat_rt,
     )
 
     emit:

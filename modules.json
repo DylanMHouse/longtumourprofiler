@@ -60,6 +60,11 @@
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
                         "installed_by": ["modules"]
                     },
+                    "fastvep/annotate": {
+                        "branch": "master",
+                        "git_sha": "081cd23035c0aa73a3d06f37d712633c3f95e07d",
+                        "installed_by": ["modules"]
+                    },
                     "htslib/bgziptabix": {
                         "branch": "master",
                         "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",

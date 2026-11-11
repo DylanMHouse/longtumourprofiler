@@ -5,3 +5,4 @@ channels:
   - bioconda
 dependencies:
   - "bioconda::fastvep=0.4.0"
+  - "bioconda::htslib=1.25"
