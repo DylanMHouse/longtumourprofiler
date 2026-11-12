@@ -97,4 +97,3 @@ class NN_classifier():
     sample.loc[sample["methylation_call"] >= 60, "methylation_call"] = 1
 
     return self.predict(sample)
-

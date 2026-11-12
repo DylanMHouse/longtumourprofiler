@@ -33,7 +33,7 @@ process CNVPYTOR {
 
     printf 'set print_filename ${prefix}.cnvpytor.vcf\\nprint calls\\n' \\
         | cnvpytor -root ${prefix}.pytor -view ${bin_size}
-    
+
     """
 
     stub:

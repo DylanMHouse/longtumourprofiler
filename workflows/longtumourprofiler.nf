@@ -406,7 +406,7 @@ workflow LONGTUMOURPROFILER {
             SAMTOOLS_FAIDX.out.fai.first(),
             params.longphase_modcall,
         )
-        
+
 
         ch_phased_bam = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
         ch_phased_snv_vcf = BAM_PHASE_HAPLOTAG_LONGPHASE.out.snv_vcf
@@ -499,7 +499,7 @@ workflow LONGTUMOURPROFILER {
         }
     )
     ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> report }
-    
+
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Tumour-Normal profiler Workflow.
@@ -514,7 +514,7 @@ workflow LONGTUMOURPROFILER {
         normal: meta.type == 'germline'
     }
 
-    // Create two independent channels to separate normal vs tumour. 
+    // Create two independent channels to separate normal vs tumour.
     def ch_tumour_keyed = ch_samples_by_type.tumour
         .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
     def ch_normal_keyed = ch_samples_by_type.normal

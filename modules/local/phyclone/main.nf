@@ -77,7 +77,7 @@ process PHYCLONE {
     //               - The use of the variable in the script `echo $args ` below.
     """
     echo $args
-    
+
     touch ${prefix}.bam
     """
 }

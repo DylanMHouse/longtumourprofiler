@@ -7,7 +7,7 @@ process SPECIMMUNE_TYPING {
     input:
     tuple val(meta), val(gene_class), path(fastq)
     path(db)
-    path(hg38, stageAs: 'hg38/*') // optional 
+    path(hg38, stageAs: 'hg38/*') // optional
 
     output:
     tuple val(meta), val(gene_class), path("${gene_class}/${prefix}/${result}"), emit: result
