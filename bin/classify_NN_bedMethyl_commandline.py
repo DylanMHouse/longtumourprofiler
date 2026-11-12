@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import pandas as pd
 from NN_model import NN_classifier

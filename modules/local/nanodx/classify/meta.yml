@@ -1,0 +1,115 @@
+name: "nanodx_classify"
+description: Predict the methylation class of a tumour from a probe-annotated bedMethyl file using the nanoDx neural network classifier
+keywords:
+  - methylation
+  - classification
+  - nanopore
+  - tumour
+  - neural network
+tools:
+  - "nanodx":
+      description: "End-to-end pipeline for DNA methylation-based classification of tumours from nanopore sequencing data"
+      homepage: "https://gitlab.com/pesk/nanoDx"
+      documentation: "https://gitlab.com/pesk/nanoDx"
+      tool_dev_url: "https://gitlab.com/pesk/nanoDx"
+      doi: "10.1038/s41591-023-02518-x"
+      licence: null
+      identifier: null
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bedmethyl:
+        type: file
+        description: |
+          bedMethyl file (BED9+2) whose name column holds the Illumina probe ID
+          of each CpG site, e.g. from intersecting with a probe annotation BED
+        pattern: "*.{bed,bedMethyl}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003" # BED
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing model information
+          e.g. `[ id:'Capper_et_al' ]`
+    - model:
+        type: file
+        description: Pickled nanoDx neural network model (weights, label encoder and input features)
+        pattern: "*.pkl"
+        ontologies: []
+output:
+  votes:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.votes.tsv":
+          type: file
+          description: Table of methylation classes with their scores, sorted by descending score, and the number of features used
+          pattern: "*.votes.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  summary:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.summary.txt":
+          type: file
+          description: Summary with the number of features, the predicted class and its score
+          pattern: "*.summary.txt"
+          ontologies:
+            - edam: "http://edamontology.org/format_2330" # Textual format
+  versions_pytorch:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "pytorch":
+          type: string
+          description: The name of the tool
+      - "python -c 'import torch; print(torch.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pytorch:
+          type: string
+          description: The name of the tool
+      - "python -c 'import torch; print(torch.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/python_numpy_pandas_scikit-learn_pytorch:c0854ff52d52d6cb
+      build_id: bd-c0854ff52d52d6cb_1
+      scan_id: sc-a8541705c99dfd8a_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/python_numpy_pandas_scikit-learn_pytorch:86a697850ca72dd1
+      build_id: bd-86a697850ca72dd1_1
+      scan_id: sc-3835dc1789991fc2_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/python_numpy_pandas_scikit-learn_pytorch:60e519e56cf907f1
+      build_id: bd-60e519e56cf907f1_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/b3/b3a2a73221980115f514109bfade4862dd81b88805ab6294bca284ab11a815ee/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/python_numpy_pandas_scikit-learn_pytorch:f561fa856993489c
+      build_id: bd-f561fa856993489c_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/91/919c1ab167d2f8f4786a6f1a0191b404468baa02a0ae9c9dac2aace80a8cf625/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/nanodx/classify/.conda-lock/linux_amd64-bd-86a697850ca72dd1_1.txt

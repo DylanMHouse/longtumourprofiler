@@ -1,0 +1,41 @@
+nextflow_process {
+
+    name "Test Process NANODX_CLASSIFY"
+    script "../main.nf"
+    process "NANODX_CLASSIFY"
+
+    tag "modules"
+    tag "modules_"
+    tag "nanodx"
+    tag "nanodx/classify"
+
+    // TODO: add a non-stub test once a small model (.pkl) and a probe-annotated bedMethyl are available as test data
+    test("bedmethyl - model - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/bed/test.bed', checkIfExists: true),
+                ]
+                input[1] = [
+                    [ id:'model' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/bed/test2.bed', checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

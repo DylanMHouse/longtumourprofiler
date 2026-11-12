@@ -1,0 +1,113 @@
+name: "liftover_liftover"
+description: Convert the coordinates of a bedMethyl file between genome assemblies with UCSC liftOver
+keywords:
+  - liftover
+  - methylation
+  - bedmethyl
+  - assembly
+  - epigenetics
+  - ucsc
+tools:
+  - "liftover":
+      description: "UCSC liftOver moves annotations from one genome assembly to another using a chain file."
+      homepage: "https://genome.ucsc.edu/cgi-bin/hgLiftOver"
+      documentation: "https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html#Liftover"
+      tool_dev_url: "https://github.com/ucscGenomeBrowser/kent"
+      doi: "10.1093/nar/gkj144"
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+      args_id: "$args"
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - methyl:
+        type: file
+        description: bedMethyl file with coordinates on the source assembly
+        pattern: "*.{bed,bedMethyl,bedmethyl}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003" # BED
+  - bedPlus:
+      type: integer
+      description: |
+        Number of leading columns that liftOver parses as standard BED fields.
+        liftOver copies the remaining columns to the output unchanged.
+        Passed to the `-bedPlus` option.
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing chain file information
+          e.g. `[ id:'hg19ToHg38' ]`
+    - chain:
+        type: file
+        description: Chain file describing the alignment from the source assembly to the target assembly
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3982" # CHAIN
+
+output:
+  mapped:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.bedMethyl":
+          type: file
+          description: bedMethyl file with records lifted to the target assembly
+          pattern: "*.bedMethyl"
+          ontologies:
+            - edam: "http://edamontology.org/format_3003" # BED
+  versions_ucsc:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The version of the tool
+
+topics:
+  versions:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/ucsc-liftover:482--c6d821f59cc751f0
+      build_id: bd-c6d821f59cc751f0_1
+      scan_id: sc-3d87bbfcf6cc5bd8_2
+    linux/amd64:
+      name: community.wave.seqera.io/library/ucsc-liftover:482--f8639164c0f3b5bf
+      build_id: bd-f8639164c0f3b5bf_1
+      scan_id: sc-a179a65ddb62b13f_2
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/ucsc-liftover:482--8912d215b5a5ebb6
+      build_id: bd-8912d215b5a5ebb6_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/43/431f93389ec340ea8cd22d67ecaad5294c369216dbb973b7c005bb171613417a/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/ucsc-liftover:482--1ebbe4452d102371
+      build_id: bd-1ebbe4452d102371_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/15/15744931def04387cf095376c9d8c322bf21ca542d64946a7258c15b40b12b82/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/liftover/liftover/.conda-lock/linux_amd64-bd-f8639164c0f3b5bf_1.txt
+    linux/arm64:
+      lock_file: modules/local/liftover/liftover/.conda-lock/linux_arm64-bd-c6d821f59cc751f0_1.txt
