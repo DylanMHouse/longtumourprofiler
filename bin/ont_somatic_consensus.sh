@@ -227,7 +227,7 @@ sanitise_header() {
   $BT index $TH -t "$out"
 }
 
-#Old norm 
+#Old norm
 #
 #norm() {
 #  local in="$1" out="$2"

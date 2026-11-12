@@ -32,4 +32,3 @@ summary = [
 
 with open(args.output_txt, 'w') as f:
     f.write("\n".join(summary))
-

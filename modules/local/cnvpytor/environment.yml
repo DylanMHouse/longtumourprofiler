@@ -6,4 +6,3 @@ channels:
 
 dependencies:
   - "bioconda::cnvpytor=1.3.2"
-

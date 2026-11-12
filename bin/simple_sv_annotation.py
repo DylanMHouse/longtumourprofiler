@@ -19,13 +19,13 @@ Notes:
     - Soft filters intergenic events that are not involved with genes directly
 
 Current scheme with priority 1(high)-3(low)
-- exon loss 
+- exon loss
  . on prioritisation gene list (2)
  . not on gene list (3)
 - gene_fusion
 . paired (hits two genes)
 .. on list of known pairs (1)
-.. not on list of known pairs 
+.. not on list of known pairs
 ... one or two genes on gene list (2)
 ... neither gene on gene list (3)
 . unpaired (hits one gene)
@@ -79,7 +79,7 @@ def main(vcf_in, outfile, exon_nums, args):
         if 'SVTYPE' in record.INFO and 'ANN' in record.INFO:
             #any(["gene_fusion" in x for x in record.INFO['ANN']])
             vcf_writer.write_record(simplify_ann(record, exon_nums, known_fusions, known_promiscuous, prioritised_genes))
-        else: 
+        else:
             record.FILTER.append("MissingAnn")
             vcf_writer.write_record(record)
     vcf_writer.close()
@@ -128,9 +128,9 @@ def simplify_ann(record, exon_nums, known_fusions, known_promiscuous, prioritise
                 exon_losses[ann_a[6]].append(i)
             except KeyError:
                 exon_losses[ann_a[6]] = [i]
-        elif "gene_fusion" in ann_a[1]: 
+        elif "gene_fusion" in ann_a[1]:
             # This could be 'gene_fusion', 'bidirectional_gene_fusion' but not 'feature_fusion'
-            # 'gene_fusion' could lead to a coding fusion whereas 
+            # 'gene_fusion' could lead to a coding fusion whereas
             # 'bidirectional_gene_fusion' is likely non-coding (opposing frames, _if_ inference correct)
             annotate_other_var(record, ann_a, known_fusions, known_promiscuous, prioritised_genes)
             annotated = True
@@ -200,7 +200,7 @@ def find_alt_deleted_exons(record, exon_nums, annotations):
 def annotate_exon_loss(record, exon_losses, exon_nums, prioritised_genes):
     """Create the exon loss simple annotation from the exon dict created
     in simplify_ann
-    
+
     For each transcript with exon losses, find the numbers for each exon
     and create the annotation
     Example: DEL|EXON_DEL|BLM|NM_001287247.1|Exon2-12del
@@ -212,7 +212,7 @@ def annotate_exon_loss(record, exon_losses, exon_nums, prioritised_genes):
             exons, gene = find_alt_deleted_exons(record, exon_nums[transcript.split('.')[0]], exon_losses[transcript])
         else:
             #use snpEff numbers for transcript
-            exons, gene = find_deleted_exons(exon_losses[transcript]) 
+            exons, gene = find_deleted_exons(exon_losses[transcript])
         exons = uniq_list(exons)
         if len(exons) == 0:
             return None
@@ -307,7 +307,7 @@ if __name__ == "__main__":
         outfile = args.vcf.replace("vcf.gz","vcf").replace(".vcf", ".simpleann.vcf")
     if os.path.exists(outfile):
         raise IOError("Output file %s exists" % outfile)
-    exonNumDict = {} 
+    exonNumDict = {}
     if args.exonNums:
-        exonNumDict = create_exon_numDict(args.exonNums) 
+        exonNumDict = create_exon_numDict(args.exonNums)
     main(args.vcf, outfile, exonNumDict, args)

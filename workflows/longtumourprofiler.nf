@@ -21,6 +21,7 @@ include { BAM_TYPE_IMMUNE_SPECIMMUNE } from '../subworkflows/local/bam_type_immu
 include { CNVPYTOR } from '../modules/local/cnvpytor/main'
 include { STRDUST } from '../modules/nf-core/strdust/main'
 include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
+include { METHYLATION_CALLING } from '../subworkflows/local/methylation_calling'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
@@ -173,6 +174,27 @@ workflow LONGTUMOURPROFILER {
 
     def ch_methyl_bed = params.methylbed
         ? channel.fromPath(params.methylbed, checkIfExists: true).map { bed -> tuple([id: "methylbed"], bed) }.first()
+        : channel.value([[:], []])
+
+    if (params.nanodx) {
+        if (!params.methyl) {
+            error("--nanodx classifies the modkit pileup, so it needs --methyl")
+        }
+        if (!(params.nanodx_model && params.nanodx_probes && params.nanodx_chain)) {
+            error("--nanodx needs --nanodx_model, --nanodx_probes and --nanodx_chain")
+        }
+    }
+
+    def ch_nanodx_model = params.nanodx_model
+        ? channel.fromPath(params.nanodx_model, checkIfExists: true).map { model -> tuple([id: "nanodx_model"], model) }.first()
+        : channel.value([[:], []])
+
+    def ch_nanodx_probes = params.nanodx_probes
+        ? channel.fromPath(params.nanodx_probes, checkIfExists: true).map { bed -> tuple([id: "nanodx_probes"], bed) }.first()
+        : channel.value([[:], []])
+
+    def ch_nanodx_chain = params.nanodx_chain
+        ? channel.fromPath(params.nanodx_chain, checkIfExists: true).map { chain -> tuple([id: "nanodx_chain"], chain) }.first()
         : channel.value([[:], []])
 
     def ch_spectre_metadata = params.spectre_metadata
@@ -384,7 +406,7 @@ workflow LONGTUMOURPROFILER {
             SAMTOOLS_FAIDX.out.fai.first(),
             params.longphase_modcall,
         )
-        
+
 
         ch_phased_bam = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
         ch_phased_snv_vcf = BAM_PHASE_HAPLOTAG_LONGPHASE.out.snv_vcf
@@ -408,7 +430,7 @@ workflow LONGTUMOURPROFILER {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    METHYLATION CALLS WITH MODKIT_PILEUP
+    METHYLATION CALLS WITH MODKIT_PILEUP, LIFTOVER, NANODX, AND BEDTOOLS
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
@@ -419,6 +441,16 @@ workflow LONGTUMOURPROFILER {
             ch_fasta_fai,
             ch_methyl_bed,
         )
+
+        // nanoDx models classify tumours, so the germline pileup is left out
+        if (params.nanodx) {
+            METHYLATION_CALLING(
+                MODKIT_PILEUP.out.bedgz.filter { meta, _bed -> meta.type == 'tumour' },
+                ch_nanodx_chain,
+                ch_nanodx_probes,
+                ch_nanodx_model,
+            )
+        }
     }
 
     /*
@@ -467,7 +499,7 @@ workflow LONGTUMOURPROFILER {
         }
     )
     ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> report }
-    
+
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Tumour-Normal profiler Workflow.
@@ -482,7 +514,7 @@ workflow LONGTUMOURPROFILER {
         normal: meta.type == 'germline'
     }
 
-    // Create two independent channels to separate normal vs tumour. 
+    // Create two independent channels to separate normal vs tumour.
     def ch_tumour_keyed = ch_samples_by_type.tumour
         .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
     def ch_normal_keyed = ch_samples_by_type.normal
