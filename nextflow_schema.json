@@ -398,6 +398,31 @@
             "pattern": "^\\S+\\.bed$",
             "description": "BED of regions to restrict the modkit pileup to. Without it, the whole genome is piled up"
         },
+        "nanodx": {
+            "type": "boolean",
+            "description": "Classify the tumour methylation profile with the nanoDx neural network. Needs --methyl, --nanodx_model, --nanodx_probes and --nanodx_chain"
+        },
+        "nanodx_model": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.pkl$",
+            "description": "Pickled nanoDx neural network model"
+        },
+        "nanodx_probes": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed$",
+            "description": "BED6 of methylation array probes with the probe ID in the name column, e.g. nanoDx static/450K_hg19.bed"
+        },
+        "nanodx_chain": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.chain(\\.gz)?$",
+            "description": "liftOver chain from the reference assembly to the assembly of --nanodx_probes, e.g. hg38ToHg19.over.chain.gz"
+        },
         "cpsr": {
             "type": "boolean",
             "description": "Report cancer predisposition variants in the germline sample's PASS SNVs with CPSR. Needs --cpsr_refdata and --cpsr_vep_cache"

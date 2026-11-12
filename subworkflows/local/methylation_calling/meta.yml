@@ -1,50 +1,60 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "methylation_calling"
-## TODO nf-core: Add a description of the subworkflow and list keywords
-description: Sort SAM/BAM/CRAM file
+description: Classify a tumour methylation profile from a modkit bedMethyl with the nanoDx neural network
 keywords:
-  - sort
-  - bam
-  - sam
-  - cram
-## TODO nf-core: Add a list of the modules and/or subworkflows used in the subworkflow
+  - methylation
+  - bedmethyl
+  - liftover
+  - classification
+  - nanopore
 components:
-  - samtools/sort
-  - samtools/index
-## TODO nf-core: List all of the channels used as input with a description and their structure
+  - liftover/liftover
+  - bedtools/intersect
+  - nanodx/classify
 input:
-  - ch_bam:
+  - ch_bedmethyl:
       type: file
       description: |
-        The input channel containing the BAM/CRAM/SAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.{bam/cram/sam}"
-## TODO nf-core: List all of the channels used as output with a descriptions and their structure
+        modkit pileup bedMethyl on the assembly the reads were aligned to
+        Structure: [ val(meta), path(bedmethyl) ]
+      pattern: "*.{bed,bed.gz}"
+  - ch_chain:
+      type: file
+      description: |
+        liftOver chain from the aligned assembly to the probe assembly
+        Structure: [ val(meta), path(chain) ]
+      pattern: "*.{chain,chain.gz}"
+  - ch_probes:
+      type: file
+      description: |
+        BED6 of methylation array probes with the probe ID in the name column
+        Structure: [ val(meta), path(bed) ]
+      pattern: "*.bed"
+  - ch_model:
+      type: file
+      description: |
+        Pickled nanoDx neural network model
+        Structure: [ val(meta), path(pkl) ]
+      pattern: "*.pkl"
 output:
-  - bam:
+  - bedmethyl:
       type: file
       description: |
-        Channel containing BAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.bam"
-  - bai:
+        Lifted bedMethyl (BED9+2) restricted to probe sites, with the probe ID as the name
+        Structure: [ val(meta), path(bed) ]
+      pattern: "*.bed"
+  - votes:
       type: file
       description: |
-        Channel containing indexed BAM (BAI) files
-        Structure: [ val(meta), path(bai) ]
-      pattern: "*.bai"
-  - csi:
+        Score of every methylation class, highest first
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*.votes.tsv"
+  - summary:
       type: file
       description: |
-        Channel containing CSI files
-        Structure: [ val(meta), path(csi) ]
-      pattern: "*.csi"
-  - versions:
-      type: file
-      description: |
-        File containing software versions
-        Structure: [ path(versions.yml) ]
-      pattern: "versions.yml"
+        Predicted class, its score and the number of features used
+        Structure: [ val(meta), path(txt) ]
+      pattern: "*.summary.txt"
 authors:
   - "@DylanMHouse"
 maintainers:
