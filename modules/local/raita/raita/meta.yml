@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "raita_raita"
+description: |
+  Compares germline and tumour alignments at panel SNP sites to check that
+  both samples come from the same individual. The comparison is anchored on
+  germline-heterozygous sites.
+keywords:
+  - identity
+  - sample swap
+  - tumour normal
+  - snp
+  - quality control
+tools:
+  - "raita":
+      description: |
+        Relatedness Assessment via IBS and Tumour Alleles. The script is
+        bundled with the module in templates/raita.py.
+      homepage: ""
+      documentation: ""
+      tool_dev_url: ""
+      doi: ""
+      licence: null
+      identifier: null
+  - "pysam":
+      description: Python module for reading and manipulating SAM, BAM and CRAM files
+      homepage: "https://pysam.readthedocs.io"
+      documentation: "https://pysam.readthedocs.io"
+      tool_dev_url: "https://github.com/pysam-developers/pysam"
+      licence: ["MIT"]
+      identifier: biotools:pysam
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - germline_bam:
+        type: file
+        description: Sorted germline BAM file
+        pattern: "*.bam"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+    - germline_bai:
+        type: file
+        description: Index of the germline BAM file
+        pattern: "*.bai"
+        ontologies:
+          - edam: "http://edamontology.org/format_3327" # BAI
+    - tumour_bam:
+        type: file
+        description: Sorted tumour BAM file
+        pattern: "*.bam"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+    - tumour_bai:
+        type: file
+        description: Index of the tumour BAM file
+        pattern: "*.bai"
+        ontologies:
+          - edam: "http://edamontology.org/format_3327" # BAI
+  - bed:
+      type: file
+      description: |
+        SNP panel in BED format. Columns are chrom, start, end, label and an
+        optional minor allele frequency.
+      pattern: "*.bed"
+      ontologies:
+        - edam: "http://edamontology.org/format_3003" # BED
+
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.raita.tsv":
+          type: file
+          description: Per-site germline and tumour allele comparison
+          pattern: "*.raita.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  report:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.raita_report.txt":
+          type: file
+          description: Summary of concordance at germline-heterozygous sites with a verdict
+          pattern: "*.raita_report.txt"
+          ontologies:
+            - edam: "http://edamontology.org/format_2330" # Textual format
+  versions_raita:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: "http://edamontology.org/format_3750" # YAML
+
+topics:
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: "http://edamontology.org/format_3750" # YAML
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

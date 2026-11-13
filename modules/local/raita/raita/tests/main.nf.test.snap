@@ -1,0 +1,100 @@
+{
+    "homo_sapiens - illumina - bam - bed": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita.tsv:md5,a2c359766a99b211b3fdb524c99db211"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita_report.txt:md5,fe13bab2c5b6b3b8f863aadc50bc90a8"
+                    ]
+                ],
+                "2": [
+                    "versions.yml:md5,5879526d2000738e22940a7647827740"
+                ],
+                "report": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita_report.txt:md5,fe13bab2c5b6b3b8f863aadc50bc90a8"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita.tsv:md5,a2c359766a99b211b3fdb524c99db211"
+                    ]
+                ],
+                "versions_raita": [
+                    "versions.yml:md5,5879526d2000738e22940a7647827740"
+                ]
+            }
+        ],
+        "timestamp": "2026-11-13T09:43:12.026543541",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    },
+    "homo_sapiens - illumina - bam - bed - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita_report.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    "versions.yml:md5,5879526d2000738e22940a7647827740"
+                ],
+                "report": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita_report.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raita.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_raita": [
+                    "versions.yml:md5,5879526d2000738e22940a7647827740"
+                ]
+            }
+        ],
+        "timestamp": "2026-11-13T09:43:17.649346168",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.4"
+        }
+    }
+}

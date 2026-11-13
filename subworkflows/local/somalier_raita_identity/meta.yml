@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "somalier_raita_identity"
+description: |
+  Checks that a tumour and its germline sample come from the same individual.
+  Somalier estimates relatedness from the two samples, grouped as an expected
+  identical pair. RAITA compares the alleles at panel SNP sites.
+keywords:
+  - identity
+  - sample swap
+  - tumour normal
+  - relatedness
+  - quality control
+components:
+  - somalier/extract
+  - somalier/relate
+  - raita/raita
+input:
+  - ch_tumour_normal:
+      type: file
+      description: |
+        Paired tumour and germline alignments with their indexes
+        Structure: [ val(tumour_meta), path(tumour_bam), path(tumour_bai), val(normal_meta), path(normal_bam), path(normal_bai) ]
+      pattern: "*.{bam,bai}"
+  - ch_fasta_fai:
+      type: file
+      description: |
+        Reference genome and its index
+        Structure: [ val(meta), path(fasta), path(fai) ]
+      pattern: "*.{fasta,fa,fai}"
+  - ch_somalier_sites:
+      type: file
+      description: |
+        Somalier sites VCF
+        Structure: [ val(meta), path(sites_vcf) ]
+      pattern: "*.vcf.gz"
+  - ch_raita_bed:
+      type: file
+      description: |
+        SNP panel for RAITA with columns chrom, start, end, label and an optional minor allele frequency
+        Structure: path(bed)
+      pattern: "*.bed"
+output:
+  - somalier_extract:
+      type: file
+      description: |
+        Somalier digest of each sample
+        Structure: [ val(meta), path(somalier) ]
+      pattern: "*.somalier"
+  - somalier_html:
+      type: file
+      description: |
+        Somalier relatedness report of the tumour and germline pair
+        Structure: [ val(tumour_meta), path(html) ]
+      pattern: "*.html"
+  - somalier_pairs:
+      type: file
+      description: |
+        Somalier pairwise relatedness statistics
+        Structure: [ val(tumour_meta), path(pairs.tsv) ]
+      pattern: "*.pairs.tsv"
+  - somalier_samples:
+      type: file
+      description: |
+        Somalier per-sample statistics
+        Structure: [ val(tumour_meta), path(samples.tsv) ]
+      pattern: "*.samples.tsv"
+  - raita_tsv:
+      type: file
+      description: |
+        RAITA per-site germline and tumour allele comparison
+        Structure: [ val(tumour_meta), path(raita.tsv) ]
+      pattern: "*.raita.tsv"
+  - raita_report:
+      type: file
+      description: |
+        RAITA summary of concordance at germline-heterozygous sites
+        Structure: [ val(tumour_meta), path(raita_report.txt) ]
+      pattern: "*.raita_report.txt"
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

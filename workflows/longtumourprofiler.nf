@@ -26,6 +26,7 @@ include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
 include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
+include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_identity/main'
 
 
 include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -224,6 +225,18 @@ workflow LONGTUMOURPROFILER {
     if (params.ascat && !(params.ascat_alleles && params.ascat_loci)) {
         error("--ascat needs --ascat_alleles and --ascat_loci")
     }
+
+    if ((params.somalier_sites as boolean) != (params.raita_bed as boolean)) {
+        error("The tumour-normal identity check needs both --somalier_sites and --raita_bed")
+    }
+
+    def ch_somalier_sites = params.somalier_sites
+        ? channel.fromPath(params.somalier_sites, checkIfExists: true).map { sites -> tuple([id: "somalier_sites"], sites) }.first()
+        : channel.value([[:], []])
+
+    def ch_raita_bed = params.raita_bed
+        ? channel.fromPath(params.raita_bed, checkIfExists: true).first()
+        : channel.value([])
 
     def ch_wakhan_cancer_genes = params.wakhan_cancer_genes
         ? channel.fromPath(params.wakhan_cancer_genes, checkIfExists: true).map { genes -> tuple([id: "cancer_genes"], genes) }.first()
@@ -531,6 +544,21 @@ workflow LONGTUMOURPROFILER {
         ch_tumour_normal_input,
         ch_fasta_fai,
     )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TUMOUR-NORMAL IDENTITY CHECK WITH SOMALIER AND RAITA
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.somalier_sites && params.raita_bed) {
+        SOMALIER_RAITA_IDENTITY(
+            ch_tumour_normal_input,
+            ch_fasta_fai,
+            ch_somalier_sites,
+            ch_raita_bed,
+        )
+    }
 
 
     /*
