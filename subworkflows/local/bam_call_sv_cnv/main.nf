@@ -16,7 +16,7 @@ workflow BAM_CALL_SV_CNV {
     main:
 
     SNIFFLES(
-        ch_input.map { meta, bam, bai -> [meta, bam, bai, []] },
+        ch_input.map { meta, bam, bai -> [meta, bam, bai, [], []] },
         ch_fasta,
         ch_tandem_repeats,
         true,
