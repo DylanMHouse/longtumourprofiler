@@ -99,6 +99,8 @@ workflow BAM_CALL_SV_CNA_TN {
     def ch_ascat_segments = channel.empty()
     def ch_ascat_cnvs = channel.empty()
     def ch_ascat_purityploidy = channel.empty()
+    def ch_ascat_purity = channel.empty()
+    def ch_ascat_ploidy = channel.empty()
     def ch_ascat_metrics = channel.empty()
     def ch_ascat_bafs = channel.empty()
     def ch_ascat_logrs = channel.empty()
@@ -120,6 +122,16 @@ workflow BAM_CALL_SV_CNA_TN {
         ch_ascat_segments = ASCAT.out.segments
         ch_ascat_cnvs = ASCAT.out.cnvs
         ch_ascat_purityploidy = ASCAT.out.purityploidy
+
+        // ASCAT writes 0 for both values when it finds no solution
+        def ch_ascat_purityploidy_values = ASCAT.out.purityploidy
+            .splitCsv(header: true, sep: '\t')
+            .multiMap { meta, row ->
+                purity: [meta, row.AberrantCellFraction as Double]
+                ploidy: [meta, row.Ploidy as Double]
+            }
+        ch_ascat_purity = ch_ascat_purityploidy_values.purity
+        ch_ascat_ploidy = ch_ascat_purityploidy_values.ploidy
         ch_ascat_metrics = ASCAT.out.metrics
         ch_ascat_bafs = ASCAT.out.bafs
         ch_ascat_logrs = ASCAT.out.logrs
@@ -165,6 +177,8 @@ workflow BAM_CALL_SV_CNA_TN {
     ascat_segments = ch_ascat_segments
     ascat_cnvs = ch_ascat_cnvs
     ascat_purityploidy = ch_ascat_purityploidy
+    ascat_purity = ch_ascat_purity // channel: [ val(tumour_meta), val(purity) ]
+    ascat_ploidy = ch_ascat_ploidy // channel: [ val(tumour_meta), val(ploidy) ]
     ascat_metrics = ch_ascat_metrics
     ascat_bafs = ch_ascat_bafs
     ascat_logrs = ch_ascat_logrs
