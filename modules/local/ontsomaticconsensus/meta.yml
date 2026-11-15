@@ -1,0 +1,152 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ontsomaticconsensus"
+description: Stratified consensus of ClairS and DeepSomatic somatic small variant
+  calls from matched tumour and normal Oxford Nanopore data
+keywords:
+  - consensus
+  - somatic
+  - vcf
+  - nanopore
+  - clairs
+  - deepsomatic
+tools:
+  - "bcftools":
+      description: "BCFtools, utilities for manipulating variant calls in VCF and BCF
+        formats."
+      homepage: "https://samtools.github.io/bcftools/bcftools.html"
+      documentation: "https://samtools.github.io/bcftools/bcftools.html"
+      tool_dev_url: "https://github.com/samtools/bcftools"
+      doi: "10.1093/gigascience/giab008"
+      licence: ["MIT"]
+      identifier: biotools:bcftools
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information. e.g. `[
+          id:'sample1' ]`
+    - deepsomatic_vcf:
+        type: file
+        description: DeepSomatic somatic VCF, bgzipped
+        pattern: "*.vcf.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016"
+    - deepsomatic_tbi:
+        type: file
+        description: Tabix index of the DeepSomatic VCF
+        pattern: "*.vcf.gz.tbi"
+        ontologies: []
+    - clairs_vcf:
+        type: file
+        description: Merged ClairS somatic VCF containing SNVs and indels, bgzipped
+        pattern: "*.vcf.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016"
+    - clairs_tbi:
+        type: file
+        description: Tabix index of the merged ClairS VCF
+        pattern: "*.vcf.gz.tbi"
+        ontologies: []
+  - - meta2:
+        type: map
+        description: Groovy Map containing reference information. e.g. `[
+          id:'hg38' ]`
+    - fasta:
+        type: file
+        description: Reference genome FASTA used by both variant callers
+        pattern: "*.{fa,fasta,fna}"
+        ontologies:
+          - edam: "http://edamontology.org/format_1929"
+    - fai:
+        type: file
+        description: FASTA index of the reference genome
+        pattern: "*.fai"
+        ontologies: []
+  - - meta3:
+        type: map
+        description: Groovy Map containing mask information. e.g. `[
+          id:'hg38_homopolymer_str' ]`
+    - mask:
+        type: file
+        description: BED file of homopolymer and tandem repeat regions. Private
+          indels in these regions are removed.
+        pattern: "*.{bed,bed.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003"
+output:
+  vcf:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.final.vcf.gz:
+          type: file
+          description: Consensus somatic VCF with CONS_SRC and CONS_CLASS INFO
+            tags
+          pattern: "*.final.vcf.gz"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016"
+  tbi:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.final.vcf.gz.tbi:
+          type: file
+          description: Tabix index of the consensus VCF
+          pattern: "*.final.vcf.gz.tbi"
+          ontologies: []
+  summary:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.summary.txt:
+          type: file
+          description: Record counts per consensus source and variant class
+          pattern: "*.summary.txt"
+          ontologies: []
+  versions_bcftools:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - bcftools:
+          type: string
+          description: The name of the tool
+      - bcftools --version | sed '1!d; s/^.*bcftools //':
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - bcftools:
+          type: string
+          description: The name of the tool
+      - bcftools --version | sed '1!d; s/^.*bcftools //':
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/bcftools_htslib:1.25--130aa7603bf3bf5c
+      build_id: bd-130aa7603bf3bf5c_9
+      scan_id: sc-b06bc84035abd22b_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bcftools_htslib:1.25--f8757489807f9c95
+      build_id: bd-f8757489807f9c95_9
+      scan_id: sc-6fa01fa7c518cc7b_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bcftools_htslib:1.25--4dd0f0a20494e269
+      build_id: bd-4dd0f0a20494e269_9
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/91/914b9b38bbfa22c458ceee6c578fd3d70ee1bffc33d3a064b0663ed4944e7872/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bcftools_htslib:1.25--37bf17f884a2aca6
+      build_id: bd-37bf17f884a2aca6_9
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/aa/aaac198ac93d951bb9cbd8b1d83ba1c4485fa43e0cbcfa9403096fc7b88956b8/data
