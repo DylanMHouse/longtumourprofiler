@@ -1,83 +1,51 @@
-// TODO nf-core: If in doubt look at other nf-core/modules to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/modules/nf-core/
-//               You can also ask for help via your pull request or on the #modules channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A module file SHOULD only define input and output files as command-line parameters.
-//               All other parameters MUST be provided using the "task.ext" directive, see here:
-//               https://www.nextflow.io/docs/latest/process.html#ext
-//               where "task.ext" is a string.
-//               Any parameters that need to be evaluated in the context of a particular sample
-//               e.g. single-end/paired-end data MUST also be defined and evaluated appropriately.
-// TODO nf-core: Software that can be piped together SHOULD be added to separate module files
-//               unless there is a run-time, storage advantage in implementing in this way
-//               e.g. it's ok to have a single module for bwa to output BAM instead of SAM:
-//                 bwa mem | samtools view -B -T ref.fasta
-// TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
-//               list (`[]`) instead of a file can be used to work around this issue.
-
 process PVACSEQ_RUN {
-    tag "$meta.id"
-    label 'process_medium'
+    tag "${meta.id}"
+    label 'process_high'
 
-    // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
-    conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f8/f849c31306ae4f1f8dd7a7170f8e753730e0f17ded573ae333998d4f1dfe0818/data'
-        : 'community.wave.seqera.io/library/pvacseq:4.0.10--506ae0a7d15e6f54'}"
+    // The official image bundles the IEDB tools (/opt/iedb) and the MHCflurry models.
+    // The bioconda package has neither, so the module does not support Conda.
+    container 'docker.io/griffithlab/pvactools:7.1.5'
 
-    input:// TODO nf-core: Where applicable all sample-specific information e.g. "id", "single_end", "read_group"
-    //               MUST be provided as an input via a Groovy Map called "meta".
-    //               This information may not be required in some instances e.g. indexing reference genome files:
-    //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
-    // TODO nf-core: Where applicable please provide/convert compressed files as input/output
-    //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    tuple val(meta), path(bam)
+    input:
+    tuple val(meta), path(vcf), val(hla_alleles)
+    val algorithms
 
     output:
-    // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
-    tuple val(meta), path("*.bam"), emit: bam
-    // TODO nf-core: List additional required output channels/values here
-    // TODO nf-core: Update the command here to obtain the version number of the software used in this module
-    // TODO nf-core: If multiple software packages are used in this module, all MUST be added here
-    //               by copying the line below and replacing the current tool with the extra tool(s)
-    tuple val("${task.process}"), val('pvacseq'), eval("pvacseq --version"), topic: versions, emit: versions_pvacseq
+    tuple val(meta), path("MHC_Class_*"), emit: outdir
+    tuple val(meta), path("MHC_Class_*/*.all_epitopes.tsv"), emit: all_epitopes
+    tuple val(meta), path("MHC_Class_*/*.all_epitopes.aggregated.tsv"), emit: aggregated, optional: true
+    tuple val(meta), path("MHC_Class_*/*.filtered.tsv"), emit: filtered, optional: true
+    tuple val("${task.process}"), val('pvactools'), eval("python -c 'from importlib.metadata import version; print(version(\"pvactools\"))'"), emit: versions_pvactools, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
+    if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
+        error("PVACSEQ_RUN module does not support Conda. Please use Docker / Singularity / Podman instead.")
+    }
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO nf-core: Where possible, a command MUST be provided to obtain the version number of the software e.g. 1.10
-    //               If the software is unable to output a version number on the command-line then it can be manually specified
-    //               e.g. https://github.com/nf-core/modules/blob/master/modules/nf-core/homer/annotatepeaks/main.nf
-    //               Each software used MUST provide the software name and version number in the YAML version file (versions.yml)
-    // TODO nf-core: It MUST be possible to pass additional parameters to the tool as a command-line string via the "task.ext.args" directive
-    // TODO nf-core: If the tool supports multi-threading then you MUST provide the appropriate parameter
-    //               using the Nextflow "task" variable e.g. "--threads $task.cpus"
-    // TODO nf-core: Please replace the example samtools command below with your module's command
-    // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
+    // The sample name must match the tumour sample column of the VCF
+    def sample_name = task.ext.prefix ?: "${meta.id}"
+    def alleles = hla_alleles instanceof List ? hla_alleles.join(',') : hla_alleles
+    def algorithm_list = algorithms instanceof List ? algorithms.join(' ') : algorithms
     """
-    pvacseq \\
-        $args \\
-        -@ $task.cpus \\
-        -o ${prefix}.bam \\
-        $bam
+    pvacseq run \\
+        ${vcf} \\
+        ${sample_name} \\
+        '${alleles}' \\
+        ${algorithm_list} \\
+        . \\
+        -t ${task.cpus} \\
+        ${args}
     """
 
     stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    // TODO nf-core: A stub section should mimic the execution of the original module as best as possible
-    //               Have a look at the following examples:
-    //               Simple example: https://github.com/nf-core/modules/blob/624977dfaf562211e68a8a868ca80acc8461f1ac/modules/nf-core/cutadapt/main.nf#L34-L46
-    //               Complex example: https://github.com/nf-core/modules/blob/88d43dad73a675e66bff49ebb57fe657a5909018/modules/nf-core/bedtools/split/main.nf#L32-L43
-    // TODO nf-core: If the module doesn't use arguments ($args), you SHOULD remove:
-    //               - The definition of args `def args = task.ext.args ?: ''` above.
-    //               - The use of the variable in the script `echo $args ` below.
+    def sample_name = task.ext.prefix ?: "${meta.id}"
     """
-    echo $args
-
-    touch ${prefix}.bam
+    mkdir MHC_Class_I
+    touch MHC_Class_I/${sample_name}.all_epitopes.tsv
+    touch MHC_Class_I/${sample_name}.all_epitopes.aggregated.tsv
+    touch MHC_Class_I/${sample_name}.filtered.tsv
     """
 }

@@ -1,0 +1,136 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "pharmcat_pipeline"
+description: Preprocess a VCF and run the PharmCAT named allele matcher, phenotyper
+  and reporter in one step with pharmcat_pipeline
+keywords:
+  - pharmacogenomics
+  - pharmcat
+  - star alleles
+  - vcf
+  - genomics
+tools:
+  - "pharmcat":
+      description: "Pharmacogenomics Clinical Annotation Tool (PharmCAT) CLI, pipeline,
+        and preprocessor."
+      homepage: "https://pharmcat.clinpgx.org/"
+      documentation: "https://pharmcat.clinpgx.org/using/Running-PharmCAT-Pipeline/"
+      tool_dev_url: "https://github.com/PharmGKB/PharmCAT"
+      doi: "10.1002/cpt.2790"
+      licence: ["MPL-2.0"]
+      identifier: null
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information. e.g. `[
+          id:'sample1' ]`
+    - vcf:
+        type: file
+        description: GRCh38 VCF file with the germline calls of one sample.
+          PharmCAT does not support gVCF input.
+        pattern: "*.{vcf,vcf.gz,vcf.bgz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+output:
+  report_tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.report.tsv":
+          type: file
+          description: Calls-only report, written with `-reporterCallsOnlyTsv`
+          pattern: "*.report.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  report_html:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.report.html":
+          type: file
+          description: HTML report, written by default or with `-reporterHtml`
+          pattern: "*.report.html"
+          ontologies:
+            - edam: "http://edamontology.org/format_2331" # HTML
+  report_json:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.report.json":
+          type: file
+          description: JSON report, written with `-reporterJson`
+          pattern: "*.report.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  match_json:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.match.json":
+          type: file
+          description: Named allele matcher results
+          pattern: "*.match.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  phenotype_json:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.phenotype.json":
+          type: file
+          description: Phenotyper results
+          pattern: "*.phenotype.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  preprocessed_vcf:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.preprocessed.vcf.bgz":
+          type: file
+          description: Normalised VCF restricted to the PharmCAT positions
+          pattern: "*.preprocessed.vcf.bgz"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+  missing_pgx_var:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.missing_pgx_var.vcf":
+          type: file
+          description: PharmCAT positions that are absent from the input VCF
+          pattern: "*.missing_pgx_var.vcf"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+  versions_pharmcat:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pharmcat:
+          type: string
+          description: The name of the tool
+      - pharmcat_pipeline --version | sed 's/PharmCAT v//':
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pharmcat:
+          type: string
+          description: The name of the tool
+      - pharmcat_pipeline --version | sed 's/PharmCAT v//':
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

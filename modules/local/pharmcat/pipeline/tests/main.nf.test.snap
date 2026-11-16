@@ -1,0 +1,131 @@
+{
+    "homo_sapiens - vcf": {
+        "content": [
+            "test.pharmcat.report.tsv",
+            "test.pharmcat.match.json",
+            "test.pharmcat.phenotype.json",
+            "test.pharmcat.preprocessed.vcf.bgz",
+            {
+                "versions_pharmcat": [
+                    [
+                        "PHARMCAT_PIPELINE",
+                        "pharmcat",
+                        "3.4.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-16T11:59:06.789299167",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "homo_sapiens - vcf - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.report.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.match.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.phenotype.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.preprocessed.vcf.bgz:md5,1a60c330fb42841e8dcf3cd507a70bfc"
+                    ]
+                ],
+                "6": [
+                    
+                ],
+                "7": [
+                    [
+                        "PHARMCAT_PIPELINE",
+                        "pharmcat",
+                        "3.4.0"
+                    ]
+                ],
+                "match_json": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.match.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "missing_pgx_var": [
+                    
+                ],
+                "phenotype_json": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.phenotype.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "preprocessed_vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.preprocessed.vcf.bgz:md5,1a60c330fb42841e8dcf3cd507a70bfc"
+                    ]
+                ],
+                "report_html": [
+                    
+                ],
+                "report_json": [
+                    
+                ],
+                "report_tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pharmcat.report.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_pharmcat": [
+                    [
+                        "PHARMCAT_PIPELINE",
+                        "pharmcat",
+                        "3.4.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-16T11:59:13.375256841",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

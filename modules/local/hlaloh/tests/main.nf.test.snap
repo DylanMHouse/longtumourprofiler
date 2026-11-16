@@ -1,0 +1,91 @@
+{
+    "homo_sapiens - tumour bam, normal bam, vcf - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.sites.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.png:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    [
+                        "HLALOH",
+                        "pysam",
+                        "0.24.1"
+                    ]
+                ],
+                "json": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "png": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.png:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "sites": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.sites.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.hla_loh.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_pysam": [
+                    [
+                        "HLALOH",
+                        "pysam",
+                        "0.24.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-16T22:20:01.724897489",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

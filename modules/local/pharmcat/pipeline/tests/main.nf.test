@@ -1,0 +1,66 @@
+nextflow_process {
+
+    name "Test Process PHARMCAT_PIPELINE"
+    script "../main.nf"
+    process "PHARMCAT_PIPELINE"
+
+    tag "modules"
+    tag "modules_"
+    tag "pharmcat"
+    tag "pharmcat/pipeline"
+
+    config "./nextflow.config"
+
+    test("homo_sapiens - vcf") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/vcf/NA12878_GIAB.chr22.vcf.gz', checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(
+                    file(process.out.report_tsv.get(0).get(1)).name,
+                    file(process.out.match_json.get(0).get(1)).name,
+                    file(process.out.phenotype_json.get(0).get(1)).name,
+                    file(process.out.preprocessed_vcf.get(0).get(1)).name,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+
+    }
+
+    test("homo_sapiens - vcf - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/vcf/NA12878_GIAB.chr22.vcf.gz', checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

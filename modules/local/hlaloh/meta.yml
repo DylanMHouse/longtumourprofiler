@@ -1,0 +1,147 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "hlaloh"
+description: Detect loss of heterozygosity across the HLA genes from matched
+  tumour and normal Oxford Nanopore data with a phased B-allele frequency test
+keywords:
+  - hla
+  - mhc
+  - loh
+  - phasing
+  - nanopore
+  - somatic
+tools:
+  - "pysam":
+      description: "Python wrapper for htslib. The pipeline script
+        hla_loh_phased_baf.py uses it to count tumour reads at phased germline
+        heterozygous SNVs."
+      homepage: "https://github.com/pysam-developers/pysam"
+      documentation: "https://pysam.readthedocs.io/"
+      tool_dev_url: "https://github.com/pysam-developers/pysam"
+      licence: ["MIT"]
+      identifier: biotools:pysam
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing tumour sample information. e.g. `[
+          id:'sample1' ]`
+    - tumour_bam:
+        type: file
+        description: Sorted tumour BAM file
+        pattern: "*.bam"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+    - tumour_bai:
+        type: file
+        description: Index of the tumour BAM file
+        pattern: "*.bai"
+        ontologies: []
+    - normal_bam:
+        type: file
+        description: Optional sorted normal BAM file. Drops heterozygous sites
+          whose normal allele balance is skewed.
+        pattern: "*.bam"
+        ontologies:
+          - edam: "http://edamontology.org/format_2572" # BAM
+    - normal_bai:
+        type: file
+        description: Index of the normal BAM file
+        pattern: "*.bai"
+        ontologies: []
+    - normal_vcf:
+        type: file
+        description: Phased germline SNV VCF of the normal sample, from
+          LongPhase or WhatsHap
+        pattern: "*.{vcf,vcf.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+    - purity:
+        type: float
+        description: Optional tumour purity. Needed for an explicit LOH and
+          copy number call.
+    - ploidy:
+        type: float
+        description: Optional tumour ploidy, recorded in the JSON output
+  - - meta2:
+        type: map
+        description: Groovy Map containing regions information. e.g. `[
+          id:'hla_regions' ]`
+    - regions_bed:
+        type: file
+        description: Optional BED file (chrom, start, end, name) of regions
+          replacing the built-in GRCh38 HLA gene windows
+        pattern: "*.bed"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003" # BED
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing tumour sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.hla_loh.tsv:
+          type: file
+          description: Summary and call per HLA gene and for the MHC-wide window
+          pattern: "*.hla_loh.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  sites:
+    - - meta:
+          type: map
+          description: Groovy Map containing tumour sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.hla_loh.sites.tsv:
+          type: file
+          description: Allele counts, B-allele frequencies and phase set per
+            heterozygous site
+          pattern: "*.hla_loh.sites.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  json:
+    - - meta:
+          type: map
+          description: Groovy Map containing tumour sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.hla_loh.json:
+          type: file
+          description: Per-gene results and run parameters
+          pattern: "*.hla_loh.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  png:
+    - - meta:
+          type: map
+          description: Groovy Map containing tumour sample information. e.g. `[
+            id:'sample1' ]`
+      - ${prefix}.hla_loh.png:
+          type: file
+          description: Tumour haplotype B-allele frequencies per HLA gene. Not
+            written when no gene has usable sites.
+          pattern: "*.hla_loh.png"
+          ontologies:
+            - edam: "http://edamontology.org/format_3603" # PNG
+  versions_pysam:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pysam:
+          type: string
+          description: The name of the tool
+      - python -c 'import pysam; print(pysam.__version__)':
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pysam:
+          type: string
+          description: The name of the tool
+      - python -c 'import pysam; print(pysam.__version__)':
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

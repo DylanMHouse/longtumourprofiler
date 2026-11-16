@@ -1,85 +1,86 @@
 name: samtools_cat
 description: Concatenate BAM or CRAM file
 keywords:
-  - merge
-  - bam
-  - sam
-  - cram
+- merge
+- bam
+- sam
+- cram
 tools:
-  - samtools:
-      description: |
-        SAMtools is a set of utilities for interacting with and post-processing
-        short DNA sequence read alignments in the SAM, BAM and CRAM formats, written by Heng Li.
-        These files are generated as output by short read aligners like BWA.
-      homepage: http://www.htslib.org/
-      documentation: http://www.htslib.org/doc/samtools.html
-      doi: 10.1093/bioinformatics/btp352
-      publication:
-        author: "Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth, G., Abecasis, G., Durbin, R. & 1000 Genome Project Data Processing Subgroup"
-        year: 2009
-        title: "The Sequence Alignment/Map format and SAMtools"
-        source: "Bioinformatics"
-      licence: ["MIT"]
-      identifier: biotools:samtools
+- samtools:
+    description: |
+      SAMtools is a set of utilities for interacting with and post-processing
+      short DNA sequence read alignments in the SAM, BAM and CRAM formats, written by Heng Li.
+      These files are generated as output by short read aligners like BWA.
+    homepage: http://www.htslib.org/
+    documentation: http://www.htslib.org/doc/samtools.html
+    doi: 10.1093/bioinformatics/btp352
+    publication:
+      author: "Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth, G., Abecasis, G., Durbin, R. & 1000 Genome Project Data Processing Subgroup"
+      year: 2009
+      title: "The Sequence Alignment/Map format and SAMtools"
+      source: "Bioinformatics"
+    licence:
+    - "MIT"
+    identifier: biotools:samtools
 input:
+- - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - input_files:
+      type: file
+      description: BAM/CRAM files
+      pattern: "*.{bam,cram}"
+      ontologies: []
+output:
+  bam:
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. [ id:'test', single_end:false ]
-    - input_files:
+    - ${prefix}.bam:
         type: file
-        description: BAM/CRAM files
-        pattern: "*.{bam,cram}"
+        description: Concatenated BAM file
+        pattern: "*.{bam}"
         ontologies: []
-output:
-  bam:
-    - - meta:
-          type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. [ id:'test', single_end:false ]
-      - ${prefix}.bam:
-          type: file
-          description: Concatenated BAM file
-          pattern: "*.{bam}"
-          ontologies: []
   cram:
-    - - meta:
-          type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. [ id:'test', single_end:false ]
-      - ${prefix}.cram:
-          type: file
-          description: Concatenated CRAM file
-          pattern: "*.{cram}"
-          ontologies: []
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+    - ${prefix}.cram:
+        type: file
+        description: Concatenated CRAM file
+        pattern: "*.{cram}"
+        ontologies: []
   versions_samtools:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - samtools:
-          type: string
-          description: The name of the tool
-      - samtools version | sed '1!d;s/.* //':
-          type: eval
-          description: The expression to obtain the version of the tool
+  - - ${task.process}:
+        type: string
+        description: The name of the process
+    - samtools:
+        type: string
+        description: The name of the tool
+    - samtools version | sed '1!d;s/.* //':
+        type: eval
+        description: The expression to obtain the version of the tool
 topics:
   versions:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - samtools:
-          type: string
-          description: The name of the tool
-      - samtools version | sed '1!d;s/.* //':
-          type: eval
-          description: The expression to obtain the version of the tool
+  - - ${task.process}:
+        type: string
+        description: The name of the process
+    - samtools:
+        type: string
+        description: The name of the tool
+    - samtools version | sed '1!d;s/.* //':
+        type: eval
+        description: The expression to obtain the version of the tool
 authors:
-  - "@matthdsm"
+- "@matthdsm"
 maintainers:
-  - "@matthdsm"
+- "@matthdsm"
 containers:
   docker:
     linux/arm64:
