@@ -498,6 +498,41 @@
         "ascat_ploidy": {
             "type": "number",
             "description": "Fix the ASCAT ploidy (psi) instead of fitting it"
+        },
+        "pharmcat": {
+            "type": "boolean",
+            "description": "Call pharmacogenomic star alleles from the germline sample's phased SNVs with PharmCAT. Needs --phasing and a GRCh38 reference"
+        },
+        "pvacseq": {
+            "type": "boolean",
+            "description": "Predict neoantigens from the ClairS somatic calls with VEP and pVACseq, using the germline HLA alleles typed by SpecImmune. Needs --specimmune with HLA typing"
+        },
+        "pvacseq_vep_cache": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "VEP cache directory for the pVACseq annotation"
+        },
+        "pvacseq_vep_cache_version": {
+            "type": "integer",
+            "description": "Version of the VEP cache, e.g. 115"
+        },
+        "pvacseq_vep_plugins": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "Folder holding the Frameshift.pm and Wildtype.pm VEP plugins that pVACseq needs"
+        },
+        "hla_loh": {
+            "type": "boolean",
+            "description": "Detect loss of heterozygosity across the HLA genes in tumour-normal pairs from the phased germline SNVs. Needs --phasing. Uses the ASCAT purity with --ascat"
+        },
+        "hla_loh_regions": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed$",
+            "description": "Optional BED file (chrom, start, end, name) of regions replacing the built-in GRCh38 HLA gene windows"
         }
     }
 }

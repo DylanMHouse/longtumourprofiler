@@ -23,6 +23,9 @@ include { STRDUST } from '../modules/nf-core/strdust/main'
 include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
 include { METHYLATION_CALLING } from '../subworkflows/local/methylation_calling'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
+include { PHARMCAT_PIPELINE } from '../modules/local/pharmcat/pipeline/main'
+include { HLALOH } from '../modules/local/hlaloh/main'
+include { VCF_NEOANTIGEN_VEP_PVACSEQ } from '../subworkflows/local/vcf_neoantigen_vep_pvacseq/main'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
 include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
@@ -222,6 +225,27 @@ workflow LONGTUMOURPROFILER {
     if (params.wakhan && !params.phasing) {
         error("--wakhan needs the LongPhase phased germline SNVs, so it needs --phasing")
     }
+    if (params.pharmcat && !params.phasing) {
+        error("--pharmcat needs the LongPhase phased germline SNVs, so it needs --phasing")
+    }
+    if (params.pharmcat && params.genome == 'GRCh37') {
+        error("--pharmcat only supports GRCh38")
+    }
+    if (params.pvacseq) {
+        if (!(params.specimmune && 'HLA' in specimmune_genes)) {
+            error("--pvacseq takes its HLA alleles from SpecImmune, so it needs --specimmune with HLA in --specimmune_genes")
+        }
+        if (!(params.pvacseq_vep_cache && params.pvacseq_vep_cache_version && params.pvacseq_vep_plugins)) {
+            error("--pvacseq needs --pvacseq_vep_cache, --pvacseq_vep_cache_version and --pvacseq_vep_plugins")
+        }
+    }
+    if (params.hla_loh && !params.phasing) {
+        error("--hla_loh needs the LongPhase phased germline SNVs, so it needs --phasing")
+    }
+    // The built-in HLA gene windows are GRCh38 coordinates
+    if (params.hla_loh && params.genome == 'GRCh37' && !params.hla_loh_regions) {
+        error("--hla_loh has GRCh38 HLA coordinates built in, so GRCh37 needs --hla_loh_regions")
+    }
     if (params.ascat && !(params.ascat_alleles && params.ascat_loci)) {
         error("--ascat needs --ascat_alleles and --ascat_loci")
     }
@@ -258,6 +282,19 @@ workflow LONGTUMOURPROFILER {
     def ch_ascat_gc = params.ascat_gc
         ? channel.fromPath(params.ascat_gc, type: 'any', checkIfExists: true).first()
         : channel.value([])
+
+    def ch_pvacseq_vep_cache = params.pvacseq_vep_cache
+        ? channel.fromPath(params.pvacseq_vep_cache, type: 'dir', checkIfExists: true).map { cache -> tuple([id: "vep_cache"], cache) }.first()
+        : channel.value([[:], []])
+
+    // Folder holding Frameshift.pm and Wildtype.pm
+    def ch_pvacseq_vep_plugins = params.pvacseq_vep_plugins
+        ? channel.fromPath(params.pvacseq_vep_plugins, type: 'dir', checkIfExists: true).first()
+        : channel.value([])
+
+    def ch_hla_loh_regions = params.hla_loh_regions
+        ? channel.fromPath(params.hla_loh_regions, checkIfExists: true).map { bed -> tuple([id: "hla_loh_regions"], bed) }.first()
+        : channel.value([[:], []])
 
     def ch_ascat_rt = params.ascat_rt
         ? channel.fromPath(params.ascat_rt, type: 'any', checkIfExists: true).first()
@@ -427,10 +464,24 @@ workflow LONGTUMOURPROFILER {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PHARMACOGENOMICS WITH PHARMCAT
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // PharmCAT calls star alleles from the phased germline SNVs
+    if (params.pharmcat) {
+        PHARMCAT_PIPELINE(
+            ch_phased_snv_vcf.filter { meta, _vcf -> meta.type == 'germline' }
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMMUNE GENE TYPING
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    def ch_specimmune_outdir = channel.empty()
     if (params.specimmune) {
         BAM_TYPE_IMMUNE_SPECIMMUNE(
             ch_input_bam,
@@ -439,6 +490,7 @@ workflow LONGTUMOURPROFILER {
             ch_specimmune_db,
             ch_specimmune_hg38,
         )
+        ch_specimmune_outdir = BAM_TYPE_IMMUNE_SPECIMMUNE.out.outdir
     }
 
     /*
@@ -547,6 +599,27 @@ workflow LONGTUMOURPROFILER {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    NEOANTIGEN PREDICTION WITH PVACSEQ
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // The germline HLA type is used because the tumour can lose an HLA haplotype
+    if (params.pvacseq) {
+        VCF_NEOANTIGEN_VEP_PVACSEQ(
+            BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_vcf,
+            ch_specimmune_outdir
+                .filter { meta, gene_class, _hla_dir -> gene_class == 'HLA' && meta.type == 'germline' }
+                .map { meta, _gene_class, hla_dir -> [meta, hla_dir] },
+            ch_fasta,
+            params.genome == 'GRCh37' ? 'GRCh37' : 'GRCh38',
+            params.pvacseq_vep_cache_version,
+            ch_pvacseq_vep_cache,
+            ch_pvacseq_vep_plugins,
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     TUMOUR-NORMAL IDENTITY CHECK WITH SOMALIER AND RAITA
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
@@ -606,6 +679,35 @@ workflow LONGTUMOURPROFILER {
         ch_ascat_gc,
         ch_ascat_rt,
     )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    HLA LOSS OF HETEROZYGOSITY
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.hla_loh) {
+        def ch_hla_loh_pairs = ch_tumour_normal_input
+            .map { tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ->
+                [normal_meta, tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai]
+            }
+            .combine(ch_phased_snv_vcf.filter { meta, _vcf -> meta.type == 'germline' }, by: 0)
+            .map { _normal_meta, tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai, normal_vcf ->
+                [tumour_meta, tumour_bam, tumour_bai, normal_bam, normal_bai, normal_vcf]
+            }
+
+
+        def ch_hla_loh_input = params.ascat
+            ? ch_hla_loh_pairs
+                .join(BAM_CALL_SV_CNA_TN.out.ascat_purity, by: 0)
+                .join(BAM_CALL_SV_CNA_TN.out.ascat_ploidy, by: 0)
+            : ch_hla_loh_pairs.map { pair -> pair + [[], []] }
+
+        HLALOH(
+            ch_hla_loh_input,
+            ch_hla_loh_regions,
+        )
+    }
 
     emit:
     multiqc_report = ch_multiqc_report

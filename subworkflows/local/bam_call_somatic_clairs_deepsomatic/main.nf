@@ -1,7 +1,7 @@
 include { CLAIRS                 } from '../../../modules/local/clairs/main'
 include { DEEPSOMATIC            } from '../../../modules/nf-core/deepsomatic/main'
 include { PARABRICKS_DEEPVARIANT } from '../../../modules/nf-core/parabricks/deepvariant/main'
-include { BCFTOOLS_MERGE         } from '../../../modules/nf-core/bcftools/merge/main'
+include { BCFTOOLS_CONCAT        } from '../../../modules/nf-core/bcftools/concat/main'
 
 workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
 
@@ -21,19 +21,16 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
         ch_fasta_fai
     )
 
-    // Merge SNV & indels from Clairs
-    ch_clairs_merge_input = CLAIRS.out.vcf
+    // Concatenate the ClairS SNVs and indels into one VCF with a single tumour sample column
+    ch_clairs_concat_input = CLAIRS.out.vcf
         .join(CLAIRS.out.tbi, by: 0)
         .join(CLAIRS.out.indel_vcf, by: 0)
         .join(CLAIRS.out.indel_tbi, by: 0)
         .map { meta, snv_vcf, snv_tbi, indel_vcf, indel_tbi ->
-            [meta, [snv_vcf, indel_vcf], [snv_tbi, indel_tbi], []]
+            [meta, [snv_vcf, indel_vcf], [snv_tbi, indel_tbi]]
         }
 
-    BCFTOOLS_MERGE(
-        ch_clairs_merge_input,
-        [[], [], []],
-    )
+    BCFTOOLS_CONCAT(ch_clairs_concat_input)
 
     ch_deepsomatic_input = ch_tumour_normal
         .map { tumour_meta, tumour_bam, tumour_bai, _normal_meta, normal_bam, normal_bai ->
@@ -60,8 +57,8 @@ workflow BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC {
     }
 
     emit:
-    clairs_vcf        = BCFTOOLS_MERGE.out.vcf             // channel: [ val(meta), path(vcf.gz) ]
-    clairs_tbi        = BCFTOOLS_MERGE.out.index           // channel: [ val(meta), path(vcf.gz.tbi) ]
+    clairs_vcf        = BCFTOOLS_CONCAT.out.vcf            // channel: [ val(meta), path(vcf.gz) ]
+    clairs_tbi        = BCFTOOLS_CONCAT.out.index          // channel: [ val(meta), path(vcf.gz.tbi) ]
     deepsomatic_vcf   = DEEPSOMATIC.out.vcf                   // channel: [ val(meta), path(vcf.gz) ]
     deepsomatic_tbi   = DEEPSOMATIC.out.vcf_tbi               // channel: [ val(meta), path(vcf.gz.tbi) ]
     deepvariant_vcf   = ch_deepvariant_vcf

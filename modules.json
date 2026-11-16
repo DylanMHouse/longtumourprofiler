@@ -15,9 +15,9 @@
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
                         "installed_by": ["modules"]
                     },
-                    "bcftools/merge": {
+                    "bcftools/concat": {
                         "branch": "master",
-                        "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
+                        "git_sha": "b489eb2587cb508cc9eef65c53f04f7419b5f6d9",
                         "installed_by": ["modules"]
                     },
                     "bcftools/query": {
@@ -53,6 +53,11 @@
                     "deepsomatic": {
                         "branch": "master",
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
+                    "ensemblvep/vep": {
+                        "branch": "master",
+                        "git_sha": "efe94a0ea5cad01b5cad21f7112644bfab4ea2b7",
                         "installed_by": ["modules"]
                     },
                     "fastqc": {

@@ -1,140 +1,140 @@
 name: sniffles
 description: structural-variant calling and genotyping of known structural variants (forced calling with --genotype-vcf) with sniffles.
 keywords:
-  - sniffles
-  - structural-variant calling
-  - long-read
+- sniffles
+- structural-variant calling
+- long-read
 tools:
-  - sniffles:
-      description: a fast structural variant caller for long-read sequencing
-      homepage: https://github.com/fritzsedlazeck/Sniffles
-      documentation: https://github.com/fritzsedlazeck/Sniffles#readme
-      tool_dev_url: https://github.com/fritzsedlazeck/Sniffles
-      licence:
-        - "MIT"
-      identifier: biotools:sniffles
+- sniffles:
+    description: a fast structural variant caller for long-read sequencing
+    homepage: https://github.com/fritzsedlazeck/Sniffles
+    documentation: https://github.com/fritzsedlazeck/Sniffles#readme
+    tool_dev_url: https://github.com/fritzsedlazeck/Sniffles
+    licence:
+    - "MIT"
+    identifier: biotools:sniffles
 input:
+- - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test' ]
+  - input:
+      type: file
+      description: A single .bam/.cram file - OR - one or more .snf files - OR - a single .tsv file containing a list of .snf files and optional sample ids as input
+      pattern: "*.{bam,cram,snf,tsv}"
+      ontologies:
+      - edam: http://edamontology.org/format_3475  # TSV
+  - index:
+      type: file
+      description: Index of BAM/CAM file
+      pattern: "*.{bai,crai}"
+      ontologies: []
+  - genotype_vcf:
+      type: file
+      description: Optional VCF of known structural variants to genotype in the input BAM/CRAM (forced calling), plain or gzipped. Use an empty list (`[]`) for regular SV calling.
+      pattern: "*.{vcf,vcf.gz}"
+      ontologies:
+      - edam: http://edamontology.org/format_3016
+  - regions:
+      type: file
+      description: Optional BED file of regions to process. Sniffles only processes reads in these regions. Use an empty list (`[]`) to process all regions.
+      pattern: "*.bed"
+      ontologies:
+      - edam: http://edamontology.org/format_3003
+- - meta2:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'fasta' ]
+  - fasta:
+      type: file
+      description: |
+        Reference database in FASTA format
+      ontologies: []
+- - meta3:
+      type: map
+      description: |
+        Groovy Map containing tandem repeat information
+        e.g. [ id:'hg38' ]
+  - tandem_file:
+      type: file
+      description: Tandem repeat file
+      pattern: "*.bed"
+      ontologies: []
+- vcf_output:
+    type: file
+    description: VCF output file
+    pattern: "*.vcf.gz"
+    ontologies:
+    - edam: http://edamontology.org/format_3989  # GZIP format
+- snf_output:
+    type: file
+    description: SNF output file
+    ontologies: []
+output:
+  vcf:
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. [ id:'test' ]
-    - input:
+    - "*.vcf.gz":
         type: file
-        description: A single .bam/.cram file - OR - one or more .snf files - OR - a single .tsv file containing a list of .snf files and optional sample ids as input
-        pattern: "*.{bam,cram,snf,tsv}"
+        description: Compressed VCF file
+        pattern: "*.vcf.gz"
         ontologies:
-          - edam: http://edamontology.org/format_3475
-    - index:
-        type: file
-        description: Index of BAM/CAM file
-        pattern: "*.{bai,crai}"
-        ontologies: []
-    - genotype_vcf:
-        type: file
-        description: Optional VCF of known structural variants to genotype in the input BAM/CRAM (forced calling), plain or gzipped. Use an empty list (`[]`) for regular SV calling.
-        pattern: "*.{vcf,vcf.gz}"
-        ontologies:
-          - edam: http://edamontology.org/format_3016
-    - regions:
-        type: file
-        description: Optional BED file of regions to process. Sniffles only processes reads in these regions. Use an empty list (`[]`) to process all regions.
-        pattern: "*.bed"
-        ontologies:
-          - edam: http://edamontology.org/format_3003
-  - - meta2:
-        type: map
-        description: |
-          Groovy Map containing reference information
-          e.g. [ id:'fasta' ]
-    - fasta:
-        type: file
-        description: |
-          Reference database in FASTA format
-        ontologies: []
-  - - meta3:
-        type: map
-        description: |
-          Groovy Map containing tandem repeat information
-          e.g. [ id:'hg38' ]
-    - tandem_file:
-        type: file
-        description: Tandem repeat file
-        pattern: "*.bed"
-        ontologies: []
-  - vcf_output:
-      type: file
-      description: VCF output file
-      pattern: "*.vcf.gz"
-      ontologies:
-        - edam: http://edamontology.org/format_3989
-  - snf_output:
-      type: file
-      description: SNF output file
-      ontologies: []
-output:
-  vcf:
-    - - meta:
-          type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. [ id:'test' ]
-      - "*.vcf.gz":
-          type: file
-          description: Compressed VCF file
-          pattern: "*.vcf.gz"
-          ontologies:
-            - edam: http://edamontology.org/format_3989
+        - edam: http://edamontology.org/format_3989  # GZIP format
   tbi:
-    - - meta:
-          type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. [ id:'test' ]
-      - "*.vcf.gz.tbi":
-          type: file
-          description: Compressed VCF file index
-          pattern: "*.tbi"
-          ontologies: []
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - "*.vcf.gz.tbi":
+        type: file
+        description: Compressed VCF file index
+        pattern: "*.tbi"
+        ontologies: []
   snf:
-    - - meta:
-          type: map
-          description: |
-            Groovy Map containing sample information
-            e.g. [ id:'test' ]
-      - "*.snf":
-          type: file
-          description: SNF file
-          pattern: "*.snf"
-          ontologies: []
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - "*.snf":
+        type: file
+        description: SNF file
+        pattern: "*.snf"
+        ontologies: []
   versions_sniffles:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - sniffles:
-          type: string
-          description: The name of the tool
-      - sniffles --version | sed 's/.* //g':
-          type: eval
-          description: The expression to obtain the version of the tool
+  - - ${task.process}:
+        type: string
+        description: The name of the process
+    - sniffles:
+        type: string
+        description: The name of the tool
+    - sniffles --version | sed 's/.* //g':
+        type: eval
+        description: The expression to obtain the version of the tool
 topics:
   versions:
-    - - ${task.process}:
-          type: string
-          description: The name of the process
-      - sniffles:
-          type: string
-          description: The name of the tool
-      - sniffles --version | sed 's/.* //g':
-          type: eval
-          description: The expression to obtain the version of the tool
+  - - ${task.process}:
+        type: string
+        description: The name of the process
+    - sniffles:
+        type: string
+        description: The name of the tool
+    - sniffles --version | sed 's/.* //g':
+        type: eval
+        description: The expression to obtain the version of the tool
 authors:
-  - "@christopher-hakkaart"
-  - "@yuukiiwa"
+- "@christopher-hakkaart"
+- "@yuukiiwa"
 maintainers:
-  - "@christopher-hakkaart"
-  - "@yuukiiwa"
-  - "@fellen31"
+- "@christopher-hakkaart"
+- "@yuukiiwa"
+- "@fellen31"
 containers:
   docker:
     linux/amd64:

@@ -1,7 +1,7 @@
 // Copyright (c) the nf-core community under an open-source MIT license.
 // See https://github.com/nf-core/modules for full license, file patching instructions and upstream contributing.
 
-process BCFTOOLS_MERGE {
+process BCFTOOLS_CONCAT {
     tag "${meta.id}"
     label 'process_medium'
 
@@ -11,12 +11,11 @@ process BCFTOOLS_MERGE {
         : 'community.wave.seqera.io/library/bcftools_htslib:1.25--130aa7603bf3bf5c'}"
 
     input:
-    tuple val(meta), path(vcfs), path(tbis), path(bed)
-    tuple val(meta2), path(fasta), path(fai)
+    tuple val(meta), path(vcfs), path(tbi)
 
     output:
-    tuple val(meta), path("*.{bcf,vcf}{,.gz}"), emit: vcf
-    tuple val(meta), path("*.{csi,tbi}"), emit: index, optional: true
+    tuple val(meta), path("${prefix}.${extension}"), emit: vcf
+    tuple val(meta), path("${prefix}.${extension}.{tbi,csi}"), emit: index, optional: true
     tuple val("${task.process}"), val('bcftools'), eval("bcftools --version | sed '1!d; s/^.*bcftools //'"), topic: versions, emit: versions_bcftools
 
     when:
@@ -24,11 +23,10 @@ process BCFTOOLS_MERGE {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-
-    def input = vcfs.collect().size() > 1 ? vcfs.sort { vcf -> vcf.name } : vcfs
-    def regions = bed ? "--regions-file ${bed}" : ""
-    def extension = args.contains("--output-type b") || args.contains("-Ob")
+    prefix = task.ext.prefix ?: "${meta.id}"
+    def tbi_names = tbi.findAll { file -> !(file instanceof List) }.collect { file -> file.name }
+    def create_input_index = vcfs.collect { vcf -> tbi_names.contains(vcf.name + ".tbi") || tbi_names.contains(vcf.name + ".csi") ? "" : "tabix ${vcf}" }.join("\n    ")
+    extension = args.contains("--output-type b") || args.contains("-Ob")
         ? "bcf.gz"
         : args.contains("--output-type u") || args.contains("-Ou")
             ? "bcf"
@@ -37,20 +35,21 @@ process BCFTOOLS_MERGE {
                 : args.contains("--output-type v") || args.contains("-Ov")
                     ? "vcf"
                     : "vcf"
-
+    def input = vcfs.sort { vcf -> vcf.toString() }.join(" ")
     """
-    bcftools merge \\
-        ${args} \\
-        ${regions} \\
-        --threads ${task.cpus} \\
+    ${create_input_index}
+
+    bcftools concat \\
         --output ${prefix}.${extension} \\
+        ${args} \\
+        --threads ${task.cpus} \\
         ${input}
     """
 
     stub:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def extension = args.contains("--output-type b") || args.contains("-Ob")
+    prefix = task.ext.prefix ?: "${meta.id}"
+    extension = args.contains("--output-type b") || args.contains("-Ob")
         ? "bcf.gz"
         : args.contains("--output-type u") || args.contains("-Ou")
             ? "bcf"
@@ -59,7 +58,7 @@ process BCFTOOLS_MERGE {
                 : args.contains("--output-type v") || args.contains("-Ov")
                     ? "vcf"
                     : "vcf"
-    def index = args.contains("--write-index=tbi") || args.contains("-W=tbi")
+    def index_extension = args.contains("--write-index=tbi") || args.contains("-W=tbi")
         ? "tbi"
         : args.contains("--write-index=csi") || args.contains("-W=csi")
             ? "csi"
@@ -67,7 +66,7 @@ process BCFTOOLS_MERGE {
                 ? "csi"
                 : ""
     def create_cmd = extension.endsWith(".gz") ? "echo '' | gzip >" : "touch"
-    def create_index = extension.endsWith(".gz") && index.matches("csi|tbi") ? "touch ${prefix}.${extension}.${index}" : ""
+    def create_index = extension.endsWith(".gz") && index_extension.matches("csi|tbi") ? "touch ${prefix}.${extension}.${index_extension}" : ""
 
     """
     ${create_cmd} ${prefix}.${extension}

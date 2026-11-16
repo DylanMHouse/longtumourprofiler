@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+
+channels:
+  - pcgr
+  - conda-forge
+  - bioconda
+dependencies:
+  - pcgr::pcgr=2.2.5
+  - pcgr::r-pcgrr=2.2.5
