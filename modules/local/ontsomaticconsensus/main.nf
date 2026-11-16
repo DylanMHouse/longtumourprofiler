@@ -23,7 +23,7 @@ process ONTSOMATICCONSENSUS {
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}_consensus"
     """
     ont_somatic_consensus.sh \\
         --ref ${fasta} \\
@@ -37,7 +37,7 @@ process ONTSOMATICCONSENSUS {
     """
 
     stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}_consensus"
     """
     echo "" | gzip > ${prefix}.final.vcf.gz
     touch ${prefix}.final.vcf.gz.tbi
