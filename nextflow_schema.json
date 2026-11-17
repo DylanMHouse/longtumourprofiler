@@ -523,6 +523,10 @@
             "exists": true,
             "description": "Folder holding the Frameshift.pm and Wildtype.pm VEP plugins that pVACseq needs"
         },
+        "scarhrd": {
+            "type": "boolean",
+            "description": "Score homologous recombination deficiency (HRD-LOH, telomeric allelic imbalance, LST and HRD-sum) from the ASCAT allele-specific copy number segments with scarHRD. Needs --ascat"
+        },
         "hla_loh": {
             "type": "boolean",
             "description": "Detect loss of heterozygosity across the HLA genes in tumour-normal pairs from the phased germline SNVs. Needs --phasing. Uses the ASCAT purity with --ascat"

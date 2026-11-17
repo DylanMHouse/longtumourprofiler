@@ -1,76 +1,85 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-# # TODO nf-core: Add a description of the module and list keywords
 name: "scarhrd"
-description: write your description here
+description: |
+  Scores homologous recombination deficiency (HRD-LOH, telomeric allelic imbalance and
+  large-scale state transitions) from ASCAT allele-specific copy number segments using scarHRD.
 keywords:
-  - sort
-  - example
-  - genomics
+  - hrd
+  - homologous recombination deficiency
+  - copy number
+  - genomic scars
+  - ascat
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
   - "scarhrd":
-      description: ""
-      homepage: ""
-      documentation: ""
-      tool_dev_url: ""
-      doi: ""
-      licence: null
-      identifier: null
+      description: |
+        R package that determines the levels of homologous recombination deficiency
+        (telomeric allelic imbalance, loss of heterozygosity, number of large-scale transitions)
+        from NGS (WES, WGS) data.
+      homepage: "https://github.com/sztup/scarHRD"
+      documentation: "https://github.com/sztup/scarHRD#readme"
+      tool_dev_url: "https://github.com/sztup/scarHRD"
+      doi: "10.1038/s41523-018-0066-6"
+      licence: ["MIT"]
+      identifier: ""
 
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - bam:
+    - segments:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
-        ontologies:
-          - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
+        description: ASCAT allele-specific segments (columns sample, chr, startpos, endpos, nMajor, nMinor)
+        pattern: "*segments.txt"
+    - purityploidy:
+        type: file
+        description: ASCAT purity and ploidy table (columns AberrantCellFraction, Ploidy)
+        pattern: "*purityploidy.txt"
 
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  scores:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
             e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - "${prefix}.scarhrd.tsv":
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
-          ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
+          description: scarHRD scores (HRD, Telomeric AI, LST, HRD-sum) and the ploidy used
+          pattern: "*.scarhrd.tsv"
+  segments:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.scarhrd_input.tsv":
+          type: file
+          description: ASCAT segments converted to the scarHRD input format
+          pattern: "*.scarhrd_input.tsv"
   versions_scarhrd:
     - - "${task.process}":
           type: string
           description: The name of the process
-      - "scarhrd":
+      - "scarHRD":
           type: string
           description: The name of the tool
-      - "scarhrd --version":
-          type: eval
-          description: The expression to obtain the version of the tool
+      - "0.1.1":
+          type: string
+          description: The scarHRD version installed from the pinned commit
 
 topics:
   versions:
     - - ${task.process}:
           type: string
           description: The name of the process
-      - scarhrd:
+      - scarHRD:
           type: string
           description: The name of the tool
-      - scarhrd --version:
-          type: eval
-          description: The expression to obtain the version of the tool
+      - "0.1.1":
+          type: string
+          description: The scarHRD version installed from the pinned commit
 authors:
   - "@DylanMHouse"
 maintainers:
