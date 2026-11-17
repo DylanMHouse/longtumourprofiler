@@ -25,6 +25,7 @@ include { METHYLATION_CALLING } from '../subworkflows/local/methylation_calling'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
 include { PHARMCAT_PIPELINE } from '../modules/local/pharmcat/pipeline/main'
 include { HLALOH } from '../modules/local/hlaloh/main'
+include { SCARHRD } from '../modules/local/scarhrd/main'
 include { VCF_NEOANTIGEN_VEP_PVACSEQ } from '../subworkflows/local/vcf_neoantigen_vep_pvacseq/main'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
@@ -248,6 +249,9 @@ workflow LONGTUMOURPROFILER {
     }
     if (params.ascat && !(params.ascat_alleles && params.ascat_loci)) {
         error("--ascat needs --ascat_alleles and --ascat_loci")
+    }
+    if (params.scarhrd && !params.ascat) {
+        error("--scarhrd scores the ASCAT allele-specific copy number segments, so it needs --ascat")
     }
 
     if ((params.somalier_sites as boolean) != (params.raita_bed as boolean)) {
@@ -706,6 +710,20 @@ workflow LONGTUMOURPROFILER {
         HLALOH(
             ch_hla_loh_input,
             ch_hla_loh_regions,
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SCARHRD: HOMOLOGOUS RECOMBINATION DEFICIENCY
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.scarhrd) {
+        // scarHRD scores the ASCAT allele-specific segments using the ASCAT ploidy
+        SCARHRD(
+            BAM_CALL_SV_CNA_TN.out.ascat_segments
+                .join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
         )
     }
 
