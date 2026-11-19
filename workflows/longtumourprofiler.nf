@@ -31,7 +31,8 @@ include { VCF_NEOANTIGEN_VEP_PVACSEQ } from '../subworkflows/local/vcf_neoantige
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
 include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
 include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_identity/main'
-
+include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
+include { MUTATIONAL_SIGNATURES_SIGPROFILER } from '../subworkflows/local/mutational_signatures_sigprofiler/main'
 
 include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -724,6 +725,48 @@ workflow LONGTUMOURPROFILER {
         SCARHRD(
             BAM_CALL_SV_CNA_TN.out.ascat_segments
                 .join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ONTCONSENSUS: GATHER CONSENSUS VARIANTS FROM CLAIRS AND DEEPSOMATIC
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    // Both callers emit with the tumour meta: [ meta, deepsomatic_vcf, deepsomatic_tbi, clairs_vcf, clairs_tbi ]
+    def ch_ontconsenus = BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.deepsomatic_vcf
+        .join(BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.deepsomatic_tbi, by: 0)
+        .join(BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_vcf, by: 0)
+        .join(BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_tbi, by: 0)
+
+    // ont_somatic_consensus.sh exits without a mask, so fail before any calling starts
+    if (!params.consensus_mask) {
+        error("The ClairS/DeepSomatic consensus needs --consensus_mask, a homopolymer and STR BED")
+    }
+    def ch_mask = channel.fromPath(params.consensus_mask, checkIfExists: true)
+        .map { mask -> tuple([id: "mask"], mask) }
+        .first()
+    
+    ONTCONSENSUS(
+        ch_ontconsenus,
+        ch_fasta_fai,
+        ch_mask
+        )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MUTATIONAL, COPY NUMBER AND SV SIGNATURES WITH SIGPROFILER
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.sigprofiler) {
+        MUTATIONAL_SIGNATURES_SIGPROFILER(
+            params.sigprofiler_genome ? BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_vcf : channel.empty(),
+            params.ascat ? BAM_CALL_SV_CNA_TN.out.ascat_segments : channel.empty(),
+            BAM_CALL_SV_CNA_TN.out.savana_somatic_bedpe,
+            params.sigprofiler_genome ? channel.fromPath(params.sigprofiler_genome, type: 'dir', checkIfExists: true).first() : channel.value([]),
+            params.sv_signatures ? channel.fromPath(params.sv_signatures, checkIfExists: true).first() : channel.value([]),
         )
     }
 

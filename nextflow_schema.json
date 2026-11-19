@@ -523,6 +523,23 @@
             "exists": true,
             "description": "Folder holding the Frameshift.pm and Wildtype.pm VEP plugins that pVACseq needs"
         },
+        "sigprofiler": {
+            "type": "boolean",
+            "description": "Fit mutational signatures with SigProfiler: SBS from the ClairS calls with --sigprofiler_genome, CN48 from the ASCAT segments with --ascat, and SV32 from the SAVANA somatic SVs"
+        },
+        "sigprofiler_genome": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "SigProfilerMatrixGenerator reference install, made with install('GRCh38', volume=dir). Needed for SBS signatures"
+        },
+        "sv_signatures": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.tsv$",
+            "description": "Reference SV32 signature TSV, e.g. RefSig/Signal, to refit the SAVANA SV32 matrix against. Without it the SV analysis stops at the matrix"
+        },
         "scarhrd": {
             "type": "boolean",
             "description": "Score homologous recombination deficiency (HRD-LOH, telomeric allelic imbalance, LST and HRD-sum) from the ASCAT allele-specific copy number segments with scarHRD. Needs --ascat"
@@ -537,6 +554,23 @@
             "exists": true,
             "pattern": "^\\S+\\.bed$",
             "description": "Optional BED file (chrom, start, end, name) of regions replacing the built-in GRCh38 HLA gene windows"
+        },
+        "somalier_sites": {
+            "type": "string"
+        },
+        "raita_bed": {
+            "type": "string"
+        },
+        "ascat_penalty": {
+            "type": "integer",
+            "default": 70
+        },
+        "consensus_mask": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed(\\.gz)?$",
+            "description": "Homopolymer and STR BED used by the ClairS/DeepSomatic consensus to mask private indels. Required"
         }
     }
 }

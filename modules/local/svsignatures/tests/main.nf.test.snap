@@ -1,0 +1,175 @@
+{
+    "savana bedpe - matrix only": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test.tumour"
+                    },
+                    "DETERMINE_SV.SV32.matrix.tsv:md5,7d8a3b412427b48ca8f19a8f71c17bf0"
+                ]
+            ]
+        ],
+        "timestamp": "2026-11-19T12:45:36.054949959",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "savana bedpe - sv32 refit": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test.tumour"
+                    },
+                    "DETERMINE_SV.SV32.matrix.tsv:md5,7d8a3b412427b48ca8f19a8f71c17bf0"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test.tumour"
+                    },
+                    "sv_signatures.tsv:md5,d5d3ddeba5c67966744efa3bff67f0a6"
+                ]
+            ],
+            {
+                "versions_sigprofilerassignment": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ],
+                "versions_sigprofilermatrixgenerator": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilermatrixgenerator",
+                        "1.3.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T12:45:22.610663942",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "savana bedpe - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "sv_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "DETERMINE_SV.SV32.matrix.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "sv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            [
+                                "DETERMINE_SV.SV32.matrix.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "sv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sv_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                        ]
+                    ]
+                ],
+                "4": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilermatrixgenerator",
+                        "1.3.3"
+                    ]
+                ],
+                "5": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ],
+                "matrix": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "DETERMINE_SV.SV32.matrix.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "outdir": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            [
+                                "DETERMINE_SV.SV32.matrix.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "sv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sv_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                        ]
+                    ]
+                ],
+                "signatures": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "sv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "sv_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                    ]
+                ],
+                "versions_sigprofilerassignment": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ],
+                "versions_sigprofilermatrixgenerator": [
+                    [
+                        "SVSIGNATURES",
+                        "sigprofilermatrixgenerator",
+                        "1.3.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T12:45:42.332677134",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

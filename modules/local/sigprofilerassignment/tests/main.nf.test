@@ -1,0 +1,66 @@
+nextflow_process {
+
+    name "Test Process SIGPROFILERASSIGNMENT"
+    script "../main.nf"
+    process "SIGPROFILERASSIGNMENT"
+
+    tag "modules"
+    tag "modules_local"
+    tag "sigprofilerassignment"
+
+    // The CNV48 refit reads only the ASCAT segments, so it runs without the ~3 GB SBS reference
+    test("ascat segments - cnv48") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test.tumour' ],
+                    [],
+                    file("${moduleDir}/tests/data/test.segments.txt", checkIfExists: true),
+                ]
+                input[1] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert path(process.out.summary[0][1]).json.cnv.signatures.size() > 0 },
+                { assert snapshot(
+                    process.out.signatures,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+
+    }
+
+    test("vcf and ascat segments - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test.tumour' ],
+                    file("${moduleDir}/tests/data/test.vcf", checkIfExists: true),
+                    file("${moduleDir}/tests/data/test.segments.txt", checkIfExists: true),
+                ]
+                input[1] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

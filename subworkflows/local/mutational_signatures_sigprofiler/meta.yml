@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "mutational_signatures_sigprofiler"
+description: Refit COSMIC SBS/ID/DBS and CN signatures with SigProfilerAssignment, and build and refit SV32 rearrangement signatures from SAVANA calls
+keywords:
+  - mutational signatures
+  - copy number signatures
+  - rearrangement signatures
+  - sigprofiler
+  - somatic
+components:
+  - sigprofilerassignment
+  - svsignatures
+input:
+  - ch_vcf:
+      type: file
+      description: |
+        Somatic SNV and indel VCF, e.g. from ClairS. Empty to skip the SBS refit
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.{vcf,vcf.gz}"
+  - ch_segments:
+      type: file
+      description: |
+        ASCAT allele-specific segments. Empty to skip the CN refit
+        Structure: [ val(meta), path(segments) ]
+      pattern: "*.txt"
+  - ch_bedpe:
+      type: file
+      description: |
+        SAVANA classified somatic BEDPE
+        Structure: [ val(meta), path(bedpe) ]
+      pattern: "*.bedpe"
+  - ch_genome_dir:
+      type: directory
+      description: |
+        SigProfilerMatrixGenerator reference install, needed for the SBS refit, or []
+        Structure: path(genome_dir)
+  - ch_sv_signatures:
+      type: file
+      description: |
+        Reference SV32 signature TSV, or [] to stop at the SV32 matrix
+        Structure: path(tsv)
+      pattern: "*.tsv"
+output:
+  - summary:
+      type: file
+      description: |
+        Combined SBS/ID/DBS and CN signature summary
+        Structure: [ val(meta), path(json) ]
+      pattern: "signature_summary.json"
+  - signatures:
+      type: file
+      description: |
+        Per-signature counts and proportions, one table per read-out
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*_signatures.tsv"
+  - outdir:
+      type: directory
+      description: |
+        Full SigProfilerAssignment output
+        Structure: [ val(meta), path(dir) ]
+  - sv_summary:
+      type: file
+      description: |
+        SV32 matrix path and refit summary
+        Structure: [ val(meta), path(json) ]
+      pattern: "sv_summary.json"
+  - sv_matrix:
+      type: file
+      description: |
+        SV32 rearrangement matrix
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*.SV32.matrix.tsv"
+  - sv_signatures:
+      type: file
+      description: |
+        Per-signature counts and proportions from the SV32 refit, only with a reference set
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "sv_signatures.tsv"
+  - sv_outdir:
+      type: directory
+      description: |
+        Full SV signature output
+        Structure: [ val(meta), path(dir) ]
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

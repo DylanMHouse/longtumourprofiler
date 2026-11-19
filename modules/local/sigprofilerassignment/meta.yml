@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "sigprofilerassignment"
+description: Refit COSMIC mutational signatures to one tumour, as SBS/ID/DBS signatures from a somatic VCF and CNV48 copy number signatures from ASCAT segments
+keywords:
+  - mutational signatures
+  - cosmic
+  - copy number signatures
+  - somatic
+  - genomics
+tools:
+  - "sigprofilerassignment":
+      description: "SigProfilerAssignment - Assignment of known mutational signatures
+        to individual samples and individual somatic mutations"
+      homepage: "https://github.com/AlexandrovLab/SigProfilerAssignment"
+      documentation: "https://github.com/AlexandrovLab/SigProfilerAssignment#readme"
+      tool_dev_url: "https://github.com/AlexandrovLab/SigProfilerAssignment"
+      doi: "10.1093/bioinformatics/btad756"
+      licence: ["BSD-2-clause"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - vcf:
+        type: file
+        description: Somatic VCF (e.g. ClairS SNVs and indels) for the SBS/ID/DBS refit, or [] to skip it
+        pattern: "*.{vcf,vcf.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+    - segments:
+        type: file
+        description: ASCAT allele-specific segments for the CNV48 refit, or [] to skip it
+        pattern: "*.txt"
+  - genome_dir:
+      type: directory
+      description: |
+        SigProfilerMatrixGenerator reference install, made with
+        `install('GRCh38', volume=dir)`. Needed only with a VCF; pass [] otherwise
+output:
+  summary:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}/signature_summary.json":
+          type: file
+          description: Combined SBS, ID, DBS and CN signature summary
+          pattern: "signature_summary.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  signatures:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}/*_signatures.tsv":
+          type: file
+          description: Per-signature counts and proportions, one table per read-out
+          pattern: "*_signatures.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  outdir:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}":
+          type: directory
+          description: Full SigProfilerAssignment output, including plots and per-context solutions
+  versions_sigprofilerassignment:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "sigprofilerassignment":
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerAssignment; print(SigProfilerAssignment.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - sigprofilerassignment:
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerAssignment; print(SigProfilerAssignment.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

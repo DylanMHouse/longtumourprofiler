@@ -1,0 +1,115 @@
+{
+    "ascat segments - cnv48": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test.tumour"
+                    },
+                    "cnv_signatures.tsv:md5,f28b28f66985300c4b4d7d062cbe4e5a"
+                ]
+            ],
+            {
+                "versions_sigprofilerassignment": [
+                    [
+                        "SIGPROFILERASSIGNMENT",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T12:37:54.173672772",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "vcf and ascat segments - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "signature_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            "cnv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sbs96_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642"
+                        ]
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            "cnv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sbs96_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "signature_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                        ]
+                    ]
+                ],
+                "3": [
+                    [
+                        "SIGPROFILERASSIGNMENT",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ],
+                "outdir": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            "cnv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sbs96_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "signature_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                        ]
+                    ]
+                ],
+                "signatures": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        [
+                            "cnv_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642",
+                            "sbs96_signatures.tsv:md5,25d7028a5de6b09dc7d6447f2fe69642"
+                        ]
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test.tumour"
+                        },
+                        "signature_summary.json:md5,8a80554c91d9fca8acb82f023de02f11"
+                    ]
+                ],
+                "versions_sigprofilerassignment": [
+                    [
+                        "SIGPROFILERASSIGNMENT",
+                        "sigprofilerassignment",
+                        "1.1.5"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T12:37:58.920222347",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}
