@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "svsignatures"
+description: |
+  Build the SV32 rearrangement matrix from SAVANA somatic SVs with SigProfilerMatrixGenerator and,
+  optionally, refit it against a user-supplied reference SV signature set with SigProfilerAssignment.
+  COSMIC has no SV signatures, so the refit needs an external catalogue such as RefSig/Signal.
+  Reference SV signatures come from short-read cohorts, so ONT refits are indicative only
+keywords:
+  - structural variants
+  - rearrangement signatures
+  - mutational signatures
+  - somatic
+  - genomics
+tools:
+  - "sigprofilermatrixgenerator":
+      description: "SigProfilerMatrixGenerator - mutational matrices for SBS, DBS, ID, CN and SV"
+      homepage: "https://github.com/AlexandrovLab/SigProfilerMatrixGenerator"
+      documentation: "https://github.com/AlexandrovLab/SigProfilerMatrixGenerator#readme"
+      tool_dev_url: "https://github.com/AlexandrovLab/SigProfilerMatrixGenerator"
+      licence: ["BSD-2-clause"]
+      identifier: ""
+  - "sigprofilerassignment":
+      description: "SigProfilerAssignment - Assignment of known mutational signatures
+        to individual samples and individual somatic mutations"
+      homepage: "https://github.com/AlexandrovLab/SigProfilerAssignment"
+      documentation: "https://github.com/AlexandrovLab/SigProfilerAssignment#readme"
+      tool_dev_url: "https://github.com/AlexandrovLab/SigProfilerAssignment"
+      doi: "10.1093/bioinformatics/btad756"
+      licence: ["BSD-2-clause"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - bedpe:
+        type: file
+        description: SAVANA classified somatic BEDPE (headerless), or a headed BEDPE with svclass or strand columns
+        pattern: "*.bedpe"
+  - sv_signatures:
+      type: file
+      description: Reference SV32 signature TSV (MutationType column plus one column per signature), or [] for the matrix only
+      pattern: "*.tsv"
+      ontologies:
+        - edam: "http://edamontology.org/format_3475" # TSV
+output:
+  summary:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}/sv_summary.json":
+          type: file
+          description: Matrix path and, with a reference set, the refit signatures
+          pattern: "sv_summary.json"
+          ontologies:
+            - edam: "http://edamontology.org/format_3464" # JSON
+  matrix:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}/sv_matrix/*.SV32.matrix.tsv":
+          type: file
+          description: SV32 matrix, also the input for de novo extraction with SigProfilerExtractor
+          pattern: "*.SV32.matrix.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  signatures:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}/sv_signatures.tsv":
+          type: file
+          description: Per-signature counts and proportions from the refit. Only with a reference set
+          pattern: "sv_signatures.tsv"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
+  outdir:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}":
+          type: directory
+          description: Full output, including the converted BEDPE, SV32 plots and refit solution
+  versions_sigprofilermatrixgenerator:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "sigprofilermatrixgenerator":
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerMatrixGenerator; print(SigProfilerMatrixGenerator.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_sigprofilerassignment:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "sigprofilerassignment":
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerAssignment; print(SigProfilerAssignment.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - sigprofilermatrixgenerator:
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerMatrixGenerator; print(SigProfilerMatrixGenerator.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - sigprofilerassignment:
+          type: string
+          description: The name of the tool
+      - "python -c 'import SigProfilerAssignment; print(SigProfilerAssignment.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

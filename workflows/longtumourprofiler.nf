@@ -32,6 +32,7 @@ include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_c
 include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
 include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_identity/main'
 include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
+include { MUTATIONAL_SIGNATURES_SIGPROFILER } from '../subworkflows/local/mutational_signatures_sigprofiler/main'
 
 include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -730,7 +731,8 @@ workflow LONGTUMOURPROFILER {
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ONTCONSENSUS: GATHER CONSENSUS VARIANTS FROM CLAIRS AND DEEPSOMATIC
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     */
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
 
     // Both callers emit with the tumour meta: [ meta, deepsomatic_vcf, deepsomatic_tbi, clairs_vcf, clairs_tbi ]
     def ch_ontconsenus = BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.deepsomatic_vcf
@@ -751,6 +753,22 @@ workflow LONGTUMOURPROFILER {
         ch_fasta_fai,
         ch_mask
         )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MUTATIONAL, COPY NUMBER AND SV SIGNATURES WITH SIGPROFILER
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.sigprofiler) {
+        MUTATIONAL_SIGNATURES_SIGPROFILER(
+            params.sigprofiler_genome ? BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_vcf : channel.empty(),
+            params.ascat ? BAM_CALL_SV_CNA_TN.out.ascat_segments : channel.empty(),
+            BAM_CALL_SV_CNA_TN.out.savana_somatic_bedpe,
+            params.sigprofiler_genome ? channel.fromPath(params.sigprofiler_genome, type: 'dir', checkIfExists: true).first() : channel.value([]),
+            params.sv_signatures ? channel.fromPath(params.sv_signatures, checkIfExists: true).first() : channel.value([]),
+        )
+    }
 
     emit:
     multiqc_report = ch_multiqc_report
