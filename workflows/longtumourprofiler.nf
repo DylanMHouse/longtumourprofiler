@@ -748,10 +748,15 @@ workflow LONGTUMOURPROFILER {
         .map { mask -> tuple([id: "mask"], mask) }
         .first()
     
+    def ch_exome_bed = params.exome_bed
+        ? channel.fromPath(params.exome_bed, checkIfExists: true).first()
+        : channel.empty()
+
     ONTCONSENSUS(
         ch_ontconsenus,
         ch_fasta_fai,
-        ch_mask
+        ch_mask,
+        ch_exome_bed,
         )
 
     /*

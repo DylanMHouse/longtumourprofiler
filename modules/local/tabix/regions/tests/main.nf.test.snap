@@ -1,0 +1,69 @@
+{
+    "vcf - unsorted bed": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.regions.vcf:md5,ba13367d140bc770696c7347aebe9ca7"
+                ]
+            ],
+            {
+                "versions_tabix": [
+                    [
+                        "TABIX_REGIONS",
+                        "tabix",
+                        "1.25"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T14:06:20.243400532",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "vcf - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.regions.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "TABIX_REGIONS",
+                        "tabix",
+                        "1.25"
+                    ]
+                ],
+                "vcf": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.regions.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_tabix": [
+                    [
+                        "TABIX_REGIONS",
+                        "tabix",
+                        "1.25"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T14:06:24.973977876",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

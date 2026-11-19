@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "tabix_regions"
+description: Extract the records of an indexed VCF that fall in the regions of a BED file with tabix -R
+keywords:
+  - tabix
+  - regions
+  - vcf
+  - exome
+tools:
+  - "tabix":
+      description: "Generic indexer for TAB-delimited genome position files"
+      homepage: "https://www.htslib.org/doc/tabix.html"
+      documentation: "https://www.htslib.org/doc/tabix.1.html"
+      tool_dev_url: "https://github.com/samtools/htslib"
+      doi: "10.1093/bioinformatics/btq671"
+      licence: ["MIT"]
+      identifier: biotools:tabix
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - vcf:
+        type: file
+        description: bgzipped VCF
+        pattern: "*.vcf.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # VCF
+    - tbi:
+        type: file
+        description: tabix index of the VCF
+        pattern: "*.tbi"
+  - bed:
+      type: file
+      description: BED of regions to keep. Merge overlapping regions first, as tabix writes a record once per region it falls in
+      pattern: "*.{bed,bed.gz}"
+      ontologies:
+        - edam: "http://edamontology.org/format_3003" # BED
+output:
+  vcf:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.vcf":
+          type: file
+          description: Uncompressed VCF of the records in the regions, in region order rather than sorted
+          pattern: "*.vcf"
+          ontologies:
+            - edam: "http://edamontology.org/format_3016" # VCF
+  versions_tabix:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "tabix":
+          type: string
+          description: The name of the tool
+      - "tabix --version | sed '1!d; s/^.*(htslib) //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - tabix:
+          type: string
+          description: The name of the tool
+      - "tabix --version | sed '1!d; s/^.*(htslib) //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

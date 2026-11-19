@@ -565,6 +565,13 @@
             "type": "integer",
             "default": 70
         },
+        "exome_bed": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed(\\.gz)?$",
+            "description": "Exome BED with overlapping regions merged (e.g. bedtools merge), otherwise variants in overlaps are duplicated. The consensus VCF is cut to these regions with tabix, sorted, and turned into a second MAF. Skipped when not set"
+        },
         "consensus_mask": {
             "type": "string",
             "format": "file-path",
