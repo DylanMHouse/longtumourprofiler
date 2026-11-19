@@ -600,6 +600,7 @@ workflow LONGTUMOURPROFILER {
     BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC(
         ch_tumour_normal_input,
         ch_fasta_fai,
+        params.deepsomatic_chunks,
     )
 
     /*

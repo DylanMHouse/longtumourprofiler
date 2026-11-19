@@ -331,6 +331,12 @@
             "type": "boolean",
             "description": "Call CNVs from read depth with CNVpytor, alongside Spectre"
         },
+        "deepsomatic_chunks": {
+            "type": "integer",
+            "default": 24,
+            "minimum": 1,
+            "description": "Number of reference chunks DeepSomatic is scattered over. Each chunk runs as its own job and the calls are merged with bcftools concat"
+        },
         "cnvpytor_bin_size": {
             "type": "integer",
             "default": 10000,
