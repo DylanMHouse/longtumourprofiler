@@ -537,6 +537,23 @@
             "exists": true,
             "pattern": "^\\S+\\.bed$",
             "description": "Optional BED file (chrom, start, end, name) of regions replacing the built-in GRCh38 HLA gene windows"
+        },
+        "somalier_sites": {
+            "type": "string"
+        },
+        "raita_bed": {
+            "type": "string"
+        },
+        "ascat_penalty": {
+            "type": "integer",
+            "default": 70
+        },
+        "consensus_mask": {
+            "type": "string",
+            "format": "file-path",
+            "exists": true,
+            "pattern": "^\\S+\\.bed(\\.gz)?$",
+            "description": "Homopolymer and STR BED used by the ClairS/DeepSomatic consensus to mask private indels. Required"
         }
     }
 }

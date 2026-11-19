@@ -7,7 +7,6 @@ process MAFSMITH {
     input:
     tuple val(meta), path(vcf)
     tuple val(meta2), path(fasta), path(fai)
-    path gff3
 
     output:
     tuple val(meta), path("${prefix}.maf"), emit: maf
@@ -18,19 +17,17 @@ process MAFSMITH {
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}_consensus"
     """
     mafsmith vcf2maf \\
-        --input-vcf ${vcf} \\
-        --output-maf ${prefix}.maf \\
+        -i ${vcf} \\
+        -o ${prefix}.maf \\
         --ref-fasta ${fasta} \\
-        --gff3 ${gff3} \\
-        --tumor-id ${meta.id} \\
         ${args}
     """
 
     stub:
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}_consensus"
     """
     touch ${prefix}.maf
     """
