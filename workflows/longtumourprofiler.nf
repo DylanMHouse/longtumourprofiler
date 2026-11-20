@@ -32,6 +32,7 @@ include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/ma
 include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_identity/main'
 include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
 include { MUTATIONAL_SIGNATURES_SIGPROFILER } from '../subworkflows/local/mutational_signatures_sigprofiler/main'
+include { ANNOTSV_SURVIVOR_ANNOTATE } from '../subworkflows/local/annotsv_survivor_annotate/main'
 
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
@@ -221,6 +222,10 @@ workflow LONGTUMOURPROFILER {
     // PCGR is run on the exome-cut consensus so the TMB and MSI estimates match --assay WES
     if (params.pcgr && !params.exome_bed) {
         error("--pcgr reports the exome-cut consensus VCF, so it needs --exome_bed")
+    }
+
+    if (params.annotsv && !params.annotsv_annotations) {
+        error("--annotsv needs --annotsv_annotations (AnnotSV annotations directory)")
     }
 
     if (params.wakhan && !params.phasing) {
@@ -647,6 +652,22 @@ workflow LONGTUMOURPROFILER {
         ch_ascat_gc,
         ch_ascat_rt,
     )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SOMATIC SV MERGE (SURVIVOR) AND ANNOTATION (ANNOTSV)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.annotsv) {
+        ANNOTSV_SURVIVOR_ANNOTATE(
+            BAM_CALL_SV_CNA_TN.out.savana_somatic_vcf
+                .join(BAM_CALL_SV_CNA_TN.out.severus_somatic_vcf, by: 0),
+            channel.fromPath(params.annotsv_annotations, type: 'dir', checkIfExists: true)
+                .map { annotations -> [[id: 'annotsv_annotations'], annotations] }
+                .first(),
+        )
+    }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

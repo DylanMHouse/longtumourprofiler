@@ -413,6 +413,16 @@
             "exists": true,
             "description": "VEP cache directory for PCGR annotation (can be the same as --cpsr_vep_cache)"
         },
+        "annotsv": {
+            "type": "boolean",
+            "description": "Merge the PASS SAVANA classified somatic SVs with the Severus somatic SVs using SURVIVOR, then annotate the merged calls with AnnotSV. Needs --annotsv_annotations"
+        },
+        "annotsv_annotations": {
+            "type": "string",
+            "format": "directory-path",
+            "exists": true,
+            "description": "AnnotSV annotations directory"
+        },
         "sniffles_tandem_repeats": {
             "type": "string"
         },
