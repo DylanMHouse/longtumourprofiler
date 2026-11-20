@@ -9,7 +9,6 @@ nextflow_workflow {
     tag "subworkflows/bam_convert_fastq_qc"
     tag "samtools/cat"
     tag "samtools/fastq"
-    tag "fastqc"
     tag "nanoplot"
 
     // COLO829 (tumour) and COLO829BL (matched normal) ONT R10.4.1 Dorado sup BAMs with MM/ML tags, chr22:24-25Mb
@@ -45,8 +44,7 @@ nextflow_workflow {
                 { assert workflow.out.png.every { meta, pngs -> pngs.size() > 0 } },
                 { assert snapshot(
                     by_id(workflow.out.fastq.collect { meta, fastq -> [ meta, file(fastq).name, path(fastq).linesGzip.size() / 4 ] }),
-                    by_id(workflow.out.txt.collect { meta, txt -> [ meta, file(txt).name ] }),
-                    by_id(workflow.out.zip.collect { meta, zip -> [ meta, file(zip).name ] })
+                    by_id(workflow.out.txt.collect { meta, txt -> [ meta, file(txt).name ] })
                 ).match() }
             )
         }
@@ -76,7 +74,6 @@ nextflow_workflow {
                 { assert workflow.success },
                 { assert workflow.out.png.size() == 0 },
                 { assert workflow.out.txt.size() == 0 },
-                { assert workflow.out.zip.size() == 0 },
                 // both BAMs are concatenated into one fastq
                 { assert snapshot(
                     workflow.out.fastq.collect { meta, fastq -> [ meta, file(fastq).name, path(fastq).linesGzip.size() / 4 ] }
@@ -116,8 +113,7 @@ nextflow_workflow {
                 { assert snapshot(
                     by_id(workflow.out.fastq),
                     by_id(workflow.out.png),
-                    by_id(workflow.out.txt),
-                    by_id(workflow.out.zip)
+                    by_id(workflow.out.txt)
                 ).match() }
             )
         }

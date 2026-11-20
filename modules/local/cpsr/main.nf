@@ -14,15 +14,17 @@ process CPSR {
 
     output:
     tuple val(meta), path("${prefix}"), emit: cpsr_reports
-    tuple val("${task.process}"), val('cpsr'),  eval("cpsr --version | sed 's/cpsr //g'"), topic: versions, emit: versions_cpsr
+    tuple val(meta), path("${prefix}/*.cpsr.*.classification.tsv.gz"), emit: classification, optional: true
+    tuple val(meta), path("${prefix}/*.cpsr.*.conf.yaml"), emit: conf_yaml, optional: true
+    tuple val("${task.process}"), val('cpsr'), eval("cpsr --version | sed 's/cpsr //g'"), topic: versions, emit: versions_cpsr
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def genome   = task.ext.genome ?: ''
-    def args     = task.ext.args ?: ''
-    prefix   = task.ext.prefix ?: "${meta.id}"
+    def genome = task.ext.genome ?: ''
+    def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${meta.id}"
     """
     export XDG_CACHE_HOME=/tmp
     export XDG_DATA_HOME=/tmp
@@ -41,8 +43,11 @@ process CPSR {
     """
 
     stub:
+    def genome = task.ext.genome ?: 'grch38'
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir -p ${prefix}
+    echo "" | gzip > ${prefix}/${prefix}.cpsr.${genome}.classification.tsv.gz
+    touch ${prefix}/${prefix}.cpsr.${genome}.conf.yaml
     """
 }

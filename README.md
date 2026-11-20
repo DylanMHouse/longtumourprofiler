@@ -37,8 +37,7 @@ their methylation tags preserved with --emit-moves flag.
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
 1. Prepare input & alignment.
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-1. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Read QC ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
 
 ## Usage
 

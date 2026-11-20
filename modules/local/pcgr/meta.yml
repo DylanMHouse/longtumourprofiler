@@ -1,62 +1,122 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-# # TODO nf-core: Add a description of the module and list keywords
 name: "pcgr"
-description: write your description here
+description: Interpret somatic SNVs/indels and copy number aberrations with the Personal Cancer Genome Reporter (PCGR), producing tiered clinical reports with TMB, MSI and mutational signature estimates
 keywords:
-  - sort
-  - example
-  - genomics
+  - somatic
+  - variant interpretation
+  - cancer
+  - report
+  - vcf
+  - copy number
 tools:
-  ## TODO nf-core: Add a description and other details for the software below
   - "pcgr":
-      description: ""
-      homepage: ""
-      documentation: ""
-      tool_dev_url: ""
-      doi: ""
-      licence: null
-      identifier: null
+      description: "Personal Cancer Genome Reporter: functional annotation and clinical interpretation of somatic variants and copy number aberrations in tumour samples"
+      homepage: "https://sigven.github.io/pcgr/"
+      documentation: "https://sigven.github.io/pcgr/articles/running.html"
+      tool_dev_url: "https://github.com/sigven/pcgr"
+      doi: "10.1093/bioinformatics/btx817"
+      licence: ["MIT"]
+      identifier: biotools:pcgr
 
 input:
-  ### TODO nf-core: Add a description of all of the variables used as input
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'sample1' ]`
-    - bam:
+    - vcf:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Bgzipped somatic SNV/indel VCF (tumour sample only)
+        pattern: "*.vcf.gz"
         ontologies:
-          - edam: "http://edamontology.org/format_2572" # BAM
-          - edam: "http://edamontology.org/format_2573" # CRAM
-          - edam: "http://edamontology.org/format_3462" # SAM
+          - edam: "http://edamontology.org/format_3989" # GZIP format
+    - tbi:
+        type: file
+        description: Tabix index of the VCF
+        pattern: "*.vcf.gz.tbi"
+    - cna:
+        type: file
+        description: |
+          Optional allele-specific copy number segments (tab-separated with columns
+          Chromosome, Start, End, nMajor, nMinor). Pass `[]` to skip.
+        pattern: "*.{tsv,txt}"
+    - cpsr_classification:
+        type: file
+        description: |
+          Optional CPSR classification of germline variants
+          (`<sample>.cpsr.<assembly>.classification.tsv.gz`). Pass `[]` to skip.
+        pattern: "*.classification.tsv.gz"
+    - cpsr_yaml:
+        type: file
+        description: |
+          Optional CPSR run configuration (`<sample>.cpsr.<assembly>.conf.yaml`),
+          required together with cpsr_classification. Pass `[]` to skip.
+        pattern: "*.conf.yaml"
+    - purity:
+        type: float
+        description: Optional tumour purity (0-1). Pass `[]` or 0 to skip.
+    - ploidy:
+        type: float
+        description: Optional tumour ploidy. Pass `[]` or 0 to skip.
+  - pcgr_dir:
+      type: directory
+      description: PCGR reference data bundle directory
+  - vep_cache:
+      type: directory
+      description: VEP cache directory
 
 output:
-  ### TODO nf-core: Add a description of all of the variables used as output
-  bam:
+  pcgr_reports:
     - - meta:
           type: map
           description: |
             Groovy Map containing sample information
             e.g. `[ id:'sample1' ]`
-      - "*.bam":
+      - ${prefix}:
+          type: directory
+          description: Directory with all PCGR output files
+  html:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/*.pcgr.*.html:
           type: file
-          description: Sorted BAM/CRAM/SAM file
-          pattern: "*.{bam,cram,sam}"
+          description: Interactive PCGR HTML report
+          pattern: "*.pcgr.*.html"
           ontologies:
-            - edam: "http://edamontology.org/format_2572" # BAM
-            - edam: "http://edamontology.org/format_2573" # CRAM
-            - edam: "http://edamontology.org/format_3462" # SAM
+            - edam: "http://edamontology.org/format_2331" # HTML
+  xlsx:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/*.pcgr.*.xlsx:
+          type: file
+          description: PCGR results as an Excel workbook
+          pattern: "*.pcgr.*.xlsx"
+  snv_indel_tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - ${prefix}/*.pcgr.*.snv_indel_ann.tsv.gz:
+          type: file
+          description: Annotated and tiered SNVs/indels
+          pattern: "*.snv_indel_ann.tsv.gz"
+          ontologies:
+            - edam: "http://edamontology.org/format_3475" # TSV
   versions_pcgr:
-    - - "${task.process}":
+    - - ${task.process}:
           type: string
           description: The name of the process
-      - "pcgr":
+      - pcgr:
           type: string
           description: The name of the tool
-      - "pcgr --version":
+      - pcgr --version | sed 's/pcgr //g':
           type: eval
           description: The expression to obtain the version of the tool
 
@@ -68,7 +128,7 @@ topics:
       - pcgr:
           type: string
           description: The name of the tool
-      - pcgr --version:
+      - pcgr --version | sed 's/pcgr //g':
           type: eval
           description: The expression to obtain the version of the tool
 authors:

@@ -72,14 +72,8 @@ workflow NFCORE_LONGTUMOURPROFILER {
     //
     LONGTUMOURPROFILER(
         ch_samples,
-        params.multiqc_config,
-        params.multiqc_logo,
-        params.multiqc_methods_description,
         params.outdir,
     )
-
-    emit:
-    multiqc_report = LONGTUMOURPROFILER.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -118,7 +112,6 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        NFCORE_LONGTUMOURPROFILER.out.multiqc_report,
     )
 }
 

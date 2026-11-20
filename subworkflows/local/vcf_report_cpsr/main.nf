@@ -12,10 +12,8 @@ workflow VCF_REPORT_CPSR {
 
     main:
 
-    // Sort into a bgzipped VCF with a .tbi (--temp-dir . is set by the module)
     BCFTOOLS_SORT_CPSR(ch_vcf)
 
-    // Keep PASS variants; output is bgzipped and tabixed. bcftools view keeps the sorted order
     BCFTOOLS_VIEW_PASS(
         BCFTOOLS_SORT_CPSR.out.vcf.join(BCFTOOLS_SORT_CPSR.out.index, by: 0),
         regions,
@@ -34,4 +32,6 @@ workflow VCF_REPORT_CPSR {
     vcf = BCFTOOLS_VIEW_PASS.out.vcf
     index = BCFTOOLS_VIEW_PASS.out.index
     reports = CPSR.out.cpsr_reports
+    classification = CPSR.out.classification // channel: [ val(meta), path(tsv.gz) ]
+    conf_yaml = CPSR.out.conf_yaml // channel: [ val(meta), path(yaml) ]
 }

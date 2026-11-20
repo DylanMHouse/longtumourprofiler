@@ -14,7 +14,7 @@ nextflow_pipeline {
         }
     }
 
-    def perSample = ['MINIMAP2_ALIGN', 'SAMTOOLS_STATS', 'SAMTOOLS_FLAGSTAT', 'SAMTOOLS_IDXSTATS', 'MOSDEPTH', 'FASTQC']
+    def perSample = ['MINIMAP2_ALIGN', 'SAMTOOLS_STATS', 'SAMTOOLS_FLAGSTAT', 'SAMTOOLS_IDXSTATS', 'MOSDEPTH']
 
     test("-profile test") {
 
@@ -35,7 +35,7 @@ nextflow_pipeline {
             assert path("$outputDir/Germline").exists()
             assertAll(
                 { assert snapshot(
-                    // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+                    // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/nf_core_longtumourprofiler_software_mqc_versions.yml"),
                     // All stable path name, with a relative path
                     stable_path,
