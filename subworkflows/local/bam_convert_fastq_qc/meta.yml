@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "bam_convert_fastq_qc"
-description: Concatenate the unaligned Dorado BAMs of a sample, and convert them to fastq while keeping the MM/ML modification tags), and optionally run FastQC and NanoPlot.
+description: Concatenate the unaligned Dorado BAMs of a sample, and convert them to fastq while keeping the MM/ML modification tags), and optionally run NanoPlot.
 keywords:
   - fastq
   - bam
@@ -9,7 +9,6 @@ keywords:
 components:
   - samtools/cat
   - samtools/fastq
-  - fastqc
   - nanoplot
 input:
   - ch_bam:
@@ -37,12 +36,6 @@ output:
         NanoPlot statistics (when --qc is set)
         Structure: [ val(meta), path(txt) ]
       pattern: "*.txt"
-  - zip:
-      type: file
-      description: |
-        FastQC reports (when --qc is set)
-        Structure: [ val(meta), path(zip) ]
-      pattern: "*.zip"
   - versions:
       type: file
       description: |

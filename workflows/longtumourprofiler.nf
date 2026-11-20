@@ -3,9 +3,7 @@
 IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-include { FASTQC } from '../modules/nf-core/fastqc/main'
-include { MULTIQC } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap } from 'plugin/nf-schema'
+include { NANOPLOT } from '../modules/nf-core/nanoplot/main'
 
 include { MOSDEPTH } from '../modules/nf-core/mosdepth/main'
 include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools'
@@ -23,6 +21,7 @@ include { STRDUST } from '../modules/nf-core/strdust/main'
 include { MODKIT_PILEUP } from '../modules/nf-core/modkit/pileup/main'
 include { METHYLATION_CALLING } from '../subworkflows/local/methylation_calling'
 include { VCF_REPORT_CPSR } from '../subworkflows/local/vcf_report_cpsr'
+include { VCF_REPORT_PCGR } from '../subworkflows/local/vcf_report_pcgr'
 include { PHARMCAT_PIPELINE } from '../modules/local/pharmcat/pipeline/main'
 include { HLALOH } from '../modules/local/hlaloh/main'
 include { SCARHRD } from '../modules/local/scarhrd/main'
@@ -34,9 +33,7 @@ include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_i
 include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
 include { MUTATIONAL_SIGNATURES_SIGPROFILER } from '../subworkflows/local/mutational_signatures_sigprofiler/main'
 
-include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_longtumourprofiler_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,9 +44,6 @@ RUN MAIN WORKFLOW
 workflow LONGTUMOURPROFILER {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-    multiqc_config
-    multiqc_logo
-    multiqc_methods_description
     outdir
 
     main:
@@ -57,8 +51,6 @@ workflow LONGTUMOURPROFILER {
 
 
     def ch_versions = channel.empty()
-    def ch_multiqc_files = channel.empty()
-    def ch_multiqc_report = channel.empty()
     def ch_input_bam = channel.empty()
 
     //
@@ -223,6 +215,13 @@ workflow LONGTUMOURPROFILER {
     if (params.cpsr && !(params.cpsr_refdata && params.cpsr_vep_cache)) {
         error("--cpsr needs --cpsr_refdata (PCGR reference data) and --cpsr_vep_cache (VEP cache directory)")
     }
+    if (params.pcgr && !(params.pcgr_refdata && params.pcgr_vep_cache)) {
+        error("--pcgr needs --pcgr_refdata (PCGR reference data) and --pcgr_vep_cache (VEP cache directory)")
+    }
+    // PCGR is run on the exome-cut consensus so the TMB and MSI estimates match --assay WES
+    if (params.pcgr && !params.exome_bed) {
+        error("--pcgr reports the exome-cut consensus VCF, so it needs --exome_bed")
+    }
 
     if (params.wakhan && !params.phasing) {
         error("--wakhan needs the LongPhase phased germline SNVs, so it needs --phasing")
@@ -315,8 +314,7 @@ workflow LONGTUMOURPROFILER {
      */
 
     if (params.qc && params.input_type == 'fastq') {
-        FASTQC(ch_samplesheet)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map { _meta, file -> file })
+        NANOPLOT(ch_samplesheet)
     }
 
     /*
@@ -346,8 +344,6 @@ workflow LONGTUMOURPROFILER {
         }
         else if (params.input_type == 'bam' || params.input_type == 'single_ubam') {
             BAM_CONVERT_FASTQ_QC(ch_samplesheet)
-            ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.zip.map { _meta, file -> file })
-            ch_multiqc_files = ch_multiqc_files.mix(BAM_CONVERT_FASTQ_QC.out.txt.map { _meta, file -> file })
 
             FASTQ_ALIGN_MINIMAP2(BAM_CONVERT_FASTQ_QC.out.fastq, ch_minimap2_ref)
         }
@@ -361,10 +357,6 @@ workflow LONGTUMOURPROFILER {
         ch_input_bam,
         ch_fasta_fai,
     )
-    ch_multiqc_files = ch_multiqc_files
-        .mix(BAM_STATS_SAMTOOLS.out.stats.map { _meta, file -> file })
-        .mix(BAM_STATS_SAMTOOLS.out.flagstat.map { _meta, file -> file })
-        .mix(BAM_STATS_SAMTOOLS.out.idxstats.map { _meta, file -> file })
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -379,9 +371,6 @@ workflow LONGTUMOURPROFILER {
             ch_fasta,
             [],
         )
-        ch_multiqc_files = ch_multiqc_files
-            .mix(MOSDEPTH.out.global_txt.map { _meta, file -> file })
-            .mix(MOSDEPTH.out.summary_txt.map { _meta, file -> file })
     }
 
 
@@ -408,6 +397,8 @@ workflow LONGTUMOURPROFILER {
      */
 
     // CPSR reports cancer predisposition variants, so it only takes the germline calls
+    def ch_cpsr_classification = channel.empty()
+    def ch_cpsr_conf_yaml = channel.empty()
     if (params.cpsr) {
         VCF_REPORT_CPSR(
             ch_snv_vcf.filter { meta, _vcf -> meta.type == 'germline' },
@@ -415,6 +406,8 @@ workflow LONGTUMOURPROFILER {
             channel.fromPath(params.cpsr_vep_cache, type: 'dir', checkIfExists: true).first(),
             ch_cpsr_regions,
         )
+        ch_cpsr_classification = VCF_REPORT_CPSR.out.classification
+        ch_cpsr_conf_yaml = VCF_REPORT_CPSR.out.conf_yaml
     }
 
     /*
@@ -538,37 +531,6 @@ workflow LONGTUMOURPROFILER {
             ch_str_bed,
         )
     }
-
-    /*
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    MULTIQC
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     */
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
-    def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    def ch_multiqc_custom_methods_description = multiqc_methods_description
-        ? file(multiqc_methods_description, checkIfExists: true)
-        : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
-    def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
-
-    MULTIQC(
-        ch_multiqc_files.flatten().collect().map { files ->
-            [
-                [id: 'longtumourprofiler'],
-                files,
-                multiqc_config
-                    ? file(multiqc_config, checkIfExists: true)
-                    : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
-                multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
-                [],
-                [],
-            ]
-        }
-    )
-    ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> report }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -762,6 +724,30 @@ workflow LONGTUMOURPROFILER {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SOMATIC VARIANT REPORTING WITH PCGR
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.pcgr) {
+        // CPSR runs on the germline sample, so its results are rekeyed to the paired tumour
+        def ch_cpsr_by_tumour = ch_tumour_normal_input
+            .map { tumour_meta, _tumour_bam, _tumour_bai, normal_meta, _normal_bam, _normal_bai -> [normal_meta, tumour_meta] }
+            .combine(ch_cpsr_classification.join(ch_cpsr_conf_yaml, by: 0), by: 0)
+            .map { _normal_meta, tumour_meta, classification, conf_yaml -> [tumour_meta, classification, conf_yaml] }
+
+        VCF_REPORT_PCGR(
+            ONTCONSENSUS.out.exome_vcf.join(ONTCONSENSUS.out.exome_tbi, by: 0),
+            params.ascat ? BAM_CALL_SV_CNA_TN.out.ascat_segments : channel.empty(),
+            params.ascat ? BAM_CALL_SV_CNA_TN.out.ascat_purity : channel.empty(),
+            params.ascat ? BAM_CALL_SV_CNA_TN.out.ascat_ploidy : channel.empty(),
+            ch_cpsr_by_tumour,
+            channel.fromPath(params.pcgr_refdata, type: 'dir', checkIfExists: true).first(),
+            channel.fromPath(params.pcgr_vep_cache, type: 'dir', checkIfExists: true).first(),
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     MUTATIONAL, COPY NUMBER AND SV SIGNATURES WITH SIGPROFILER
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
@@ -777,7 +763,6 @@ workflow LONGTUMOURPROFILER {
     }
 
     emit:
-    multiqc_report = ch_multiqc_report
     versions = ch_versions // channel: [ path(versions.yml) ]
 }
 

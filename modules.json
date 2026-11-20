@@ -60,14 +60,14 @@
                         "git_sha": "efe94a0ea5cad01b5cad21f7112644bfab4ea2b7",
                         "installed_by": ["modules"]
                     },
-                    "fastqc": {
-                        "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
-                        "installed_by": ["modules"]
-                    },
                     "fastvep/annotate": {
                         "branch": "master",
                         "git_sha": "081cd23035c0aa73a3d06f37d712633c3f95e07d",
+                        "installed_by": ["modules"]
+                    },
+                    "gawk": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
                         "installed_by": ["modules"]
                     },
                     "htslib/bgziptabix": {
@@ -98,11 +98,6 @@
                     "mosdepth": {
                         "branch": "master",
                         "git_sha": "4bb3a64846ec51065b2b275b813ce27f8afae10c",
-                        "installed_by": ["modules"]
-                    },
-                    "multiqc": {
-                        "branch": "master",
-                        "git_sha": "868791e991feaaeff234b79f7910b6b442627529",
                         "installed_by": ["modules"]
                     },
                     "nanoplot": {
