@@ -33,6 +33,7 @@ include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_i
 include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
 include { MUTATIONAL_SIGNATURES_SIGPROFILER } from '../subworkflows/local/mutational_signatures_sigprofiler/main'
 include { ANNOTSV_SURVIVOR_ANNOTATE } from '../subworkflows/local/annotsv_survivor_annotate/main'
+include { VCF_ANNOTATE_FUSIONS_SIMPLESV } from '../subworkflows/local/vcf_annotate_fusions_simplesv/main'
 
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
@@ -667,6 +668,9 @@ workflow LONGTUMOURPROFILER {
                 .map { annotations -> [[id: 'annotsv_annotations'], annotations] }
                 .first(),
         )
+
+        // Gene fusion calls from the merged SVs: snpEff + simple_sv_annotation
+        VCF_ANNOTATE_FUSIONS_SIMPLESV(ANNOTSV_SURVIVOR_ANNOTATE.out.merged_vcf)
     }
 
     /*

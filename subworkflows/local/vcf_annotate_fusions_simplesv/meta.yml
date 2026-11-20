@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "vcf_annotate_fusions_simplesv"
+description: Annotate the merged Severus/SAVANA somatic SVs with snpEff (hg38, canonical transcripts), simplify the annotation with simple_sv_annotation and list the gene fusions.
+keywords:
+  - structural variants
+  - gene fusion
+  - snpeff
+  - annotation
+components:
+  - snpeff/snpeff
+  - bcftools/query
+input:
+  - ch_sv_vcf:
+      type: file
+      description: |
+        Sorted SURVIVOR merge of the Severus and PASS SAVANA somatic SVs
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.vcf"
+output:
+  - snpeff_vcf:
+      type: file
+      description: |
+        snpEff annotated SVs
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.ann.vcf"
+  - simpleann_vcf:
+      type: file
+      description: |
+        SVs with the SIMPLE_ANN and SV_HIGHEST_TIER INFO fields from simple_sv_annotation
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.simpleann.vcf"
+  - gene_fusions:
+      type: file
+      description: |
+        SIMPLE_ANN of every SV that has one, one SV per line
+        Structure: [ val(meta), path(txt) ]
+      pattern: "*.genefusions.txt"
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
