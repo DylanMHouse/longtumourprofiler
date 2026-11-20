@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Subworkflow VCF_REPORT_PCGR"
+    script "../main.nf"
+    workflow "VCF_REPORT_PCGR"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "vcf_report_pcgr"
+    tag "pcgr"
+    tag "gawk"
+
+    // PCGR needs its multi-GB reference bundle and a VEP cache, so only the stub is tested.
+    // tumour2 has no ASCAT results, so it checks that missing optional inputs become [].
+    test("homo_sapiens - vcf - segments - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                def vcf = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/gatk/paired_mutect2_calls/test_test2_paired_mutect2_calls.vcf.gz', checkIfExists: true)
+                def tbi = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/gatk/paired_mutect2_calls/test_test2_paired_mutect2_calls.vcf.gz.tbi', checkIfExists: true)
+                input[0] = channel.of(
+                    [ [ id:'tumour1' ], vcf, tbi ],
+                    [ [ id:'tumour2' ], vcf, tbi ],
+                )
+                input[1] = channel.of([ [ id:'tumour1' ], file("${moduleDir}/tests/tumour1.segments.txt", checkIfExists: true) ])
+                input[2] = channel.of([ [ id:'tumour1' ], 0.6 ])
+                input[3] = channel.of([ [ id:'tumour1' ], 2.1 ])
+                input[4] = channel.empty()
+                input[5] = []
+                input[6] = []
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assertAll(
+                { assert workflow.out.reports.size() == 2 },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+
+    }
+
+}

@@ -1,0 +1,2 @@
+sample	chr	startpos	endpos	nMajor	nMinor
+tumour1	chr1	10000	500000	2	1

@@ -1,0 +1,79 @@
+{
+    "homo_sapiens - savana, severus vcf - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana.pass.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana_severus.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana_severus.annotsv.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "annotsv_tsv": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana_severus.annotsv.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "annotsv_vcf": [
+                    
+                ],
+                "merged_vcf": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana_severus.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "savana_pass_vcf": [
+                    [
+                        {
+                            "id": "test_T",
+                            "patient": "test",
+                            "type": "tumour"
+                        },
+                        "test_T.savana.pass.vcf:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-20T11:51:27.967252374",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

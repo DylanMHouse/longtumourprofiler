@@ -1,0 +1,101 @@
+{
+    "homo_sapiens - vcf - segments - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        "tumour1.pcgr_cna.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        [
+                            "tumour1.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "tumour1.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "tumour1.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ],
+                    [
+                        {
+                            "id": "tumour2"
+                        },
+                        [
+                            "tumour2.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "tumour2.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "tumour2.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        "tumour1.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "tumour2"
+                        },
+                        "tumour2.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "cna": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        "tumour1.pcgr_cna.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "html": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        "tumour1.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "tumour2"
+                        },
+                        "tumour2.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "reports": [
+                    [
+                        {
+                            "id": "tumour1"
+                        },
+                        [
+                            "tumour1.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "tumour1.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "tumour1.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ],
+                    [
+                        {
+                            "id": "tumour2"
+                        },
+                        [
+                            "tumour2.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "tumour2.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "tumour2.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T21:31:56.695500043",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

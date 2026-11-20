@@ -1,0 +1,99 @@
+{
+    "homo_sapiens - vcf - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "test.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "test.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "4": [
+                    [
+                        "PCGR",
+                        "pcgr",
+                        "2.2.5.9000"
+                    ]
+                ],
+                "html": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "pcgr_reports": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "test.pcgr.grch38.html:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "test.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "snv_indel_tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.snv_indel_ann.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "versions_pcgr": [
+                    [
+                        "PCGR",
+                        "pcgr",
+                        "2.2.5.9000"
+                    ]
+                ],
+                "xlsx": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pcgr.grch38.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-19T21:26:30.478316505",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}
