@@ -1,50 +1,54 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "annotsv_survivor_annotate"
-## TODO nf-core: Add a description of the subworkflow and list keywords
-description: Sort SAM/BAM/CRAM file
+description: Keep the PASS SAVANA somatic SVs, merge them with the Severus somatic SVs using SURVIVOR, sort the merged VCF and annotate it with AnnotSV.
 keywords:
-  - sort
-  - bam
-  - sam
-  - cram
-## TODO nf-core: Add a list of the modules and/or subworkflows used in the subworkflow
+  - structural variants
+  - sv
+  - merge
+  - annotation
+  - nanopore
 components:
-  - samtools/sort
-  - samtools/index
-## TODO nf-core: List all of the channels used as input with a description and their structure
+  - bcftools/view
+  - survivor/merge
+  - bcftools/sort
+  - annotsv/annotsv
 input:
-  - ch_bam:
+  - ch_savana_severus:
       type: file
       description: |
-        The input channel containing the BAM/CRAM/SAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.{bam/cram/sam}"
-## TODO nf-core: List all of the channels used as output with a descriptions and their structure
+        Uncompressed somatic SV VCFs from SAVANA and Severus for each tumour
+        Structure: [ val(meta), path(savana_vcf), path(severus_vcf) ]
+      pattern: "*.vcf"
+  - ch_annotations:
+      type: directory
+      description: |
+        AnnotSV annotations directory
+        Structure: [ val(meta2), path(annotations) ]
 output:
-  - bam:
+  - savana_pass_vcf:
       type: file
       description: |
-        Channel containing BAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.bam"
-  - bai:
+        SAVANA SVs with FILTER=PASS
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.vcf"
+  - merged_vcf:
       type: file
       description: |
-        Channel containing indexed BAM (BAI) files
-        Structure: [ val(meta), path(bai) ]
-      pattern: "*.bai"
-  - csi:
+        Sorted SURVIVOR merge of the Severus and PASS SAVANA SVs
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.vcf"
+  - annotsv_tsv:
       type: file
       description: |
-        Channel containing CSI files
-        Structure: [ val(meta), path(csi) ]
-      pattern: "*.csi"
-  - versions:
+        AnnotSV annotation table of the merged SVs
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*.tsv"
+  - annotsv_vcf:
       type: file
       description: |
-        File containing software versions
-        Structure: [ path(versions.yml) ]
-      pattern: "versions.yml"
+        AnnotSV annotated VCF (when -vcf 1 is passed to AnnotSV)
+        Structure: [ val(meta), path(vcf) ]
+      pattern: "*.vcf"
 authors:
   - "@DylanMHouse"
 maintainers:
