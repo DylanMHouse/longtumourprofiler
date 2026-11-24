@@ -670,7 +670,7 @@ workflow LONGTUMOURPROFILER {
         )
 
         // Gene fusion calls from the merged SVs: snpEff + simple_sv_annotation
-        VCF_ANNOTATE_FUSIONS_SIMPLESV(ANNOTSV_SURVIVOR_ANNOTATE.out.merged_vcf)
+        VCF_ANNOTATE_FUSIONS_SIMPLESV(ANNOTSV_SURVIVOR_ANNOTATE.out.merged_vcf, params.snpeff_db)
     }
 
     /*

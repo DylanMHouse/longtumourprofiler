@@ -423,6 +423,11 @@
             "exists": true,
             "description": "AnnotSV annotations directory"
         },
+        "snpeff_db": {
+            "type": "string",
+            "default": "GRCh38.mane.1.2.ensembl",
+            "description": "snpEff database to download and annotate the merged SVs with before gene fusion calling"
+        },
         "sniffles_tandem_repeats": {
             "type": "string"
         },

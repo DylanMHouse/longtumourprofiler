@@ -185,6 +185,11 @@
                         "git_sha": "d25165ced4e544afaa3ef0223d643343b9ba2112",
                         "installed_by": ["modules"]
                     },
+                    "snpeff/download": {
+                        "branch": "master",
+                        "git_sha": "db8b71b166af9703c3cd5670c5a01db3f6dc1aac",
+                        "installed_by": ["modules"]
+                    },
                     "snpeff/snpeff": {
                         "branch": "master",
                         "git_sha": "db8b71b166af9703c3cd5670c5a01db3f6dc1aac",
