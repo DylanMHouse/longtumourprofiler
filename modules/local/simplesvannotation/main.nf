@@ -4,8 +4,8 @@ process SIMPLESVANNOTATION {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/51/516ef42cf72f6bbc3393ad30c3a100581789a9d434f5c46cdd3c7f6e2317f806/data'
-        : 'community.wave.seqera.io/library/python_pyvcf:a216efba3d3414de'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/05/05da49ea791f47ba15d5e0e498760cefbef0ce77fe387523e3c293db34c07bbf/data'
+        : 'community.wave.seqera.io/library/python_pyvcf:71c2dc57bdf865ed'}"
 
     input:
     tuple val(meta), path(vcf)

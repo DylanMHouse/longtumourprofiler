@@ -76,24 +76,24 @@ maintainers:
 containers:
   docker:
     linux/amd64:
-      name: community.wave.seqera.io/library/python_pyvcf:a216efba3d3414de
-      build_id: bd-a216efba3d3414de_1
-      scan_id: sc-c446d21b91b792ae_1
+      name: community.wave.seqera.io/library/python_pyvcf:71c2dc57bdf865ed
+      build_id: bd-71c2dc57bdf865ed_1
+      scan_id: sc-f91b1f074e994961_1
     linux/arm64:
-      name: community.wave.seqera.io/library/python_pyvcf:be612818926b3ee0
-      build_id: bd-be612818926b3ee0_1
-      scan_id: sc-7cd5078b22c69ac9_1
+      name: community.wave.seqera.io/library/python_pyvcf:8bc627b40df6c8d1
+      build_id: bd-8bc627b40df6c8d1_1
+      scan_id: sc-96982c076e5ff340_1
   singularity:
-    linux/arm64:
-      name: oras://community.wave.seqera.io/library/python_pyvcf:568c8b3de775a646
-      build_id: bd-568c8b3de775a646_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed268cfb6ea5477a5407cfc0e013b62e6f1515255f1308aedf59493e44a8024f/data
     linux/amd64:
-      name: oras://community.wave.seqera.io/library/python_pyvcf:0b6cb701b72a921f
-      build_id: bd-0b6cb701b72a921f_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/51/516ef42cf72f6bbc3393ad30c3a100581789a9d434f5c46cdd3c7f6e2317f806/data
+      name: oras://community.wave.seqera.io/library/python_pyvcf:260930a3f4330d30
+      build_id: bd-260930a3f4330d30_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/05/05da49ea791f47ba15d5e0e498760cefbef0ce77fe387523e3c293db34c07bbf/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/python_pyvcf:667930ddd85e1a21
+      build_id: bd-667930ddd85e1a21_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed4828af7bfdef7cd1cde088214670335aa3afca08ffe2bfb4e924414ece5b60/data
   conda:
     linux/amd64:
-      lock_file: modules/local/simplesvannotation/.conda-lock/linux_amd64-bd-a216efba3d3414de_1.txt
+      lock_file: modules/local/simplesvannotation/.conda-lock/linux_amd64-bd-71c2dc57bdf865ed_1.txt
     linux/arm64:
-      lock_file: modules/local/simplesvannotation/.conda-lock/linux_arm64-bd-be612818926b3ee0_1.txt
+      lock_file: modules/local/simplesvannotation/.conda-lock/linux_arm64-bd-8bc627b40df6c8d1_1.txt
