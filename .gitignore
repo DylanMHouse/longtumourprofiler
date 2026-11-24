@@ -11,3 +11,5 @@ null/
 .nf-test/
 .nf-test.log
 .idea/
+
+nanopore_tumour_normal_report.py
