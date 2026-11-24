@@ -1,29 +1,19 @@
-// Structural variant calling: Sniffles for SVs from split/spanning reads, Spectre for large CNVs (>100kb) from binned coverage
+// Large CNV calling (>100kb) with Spectre from mosdepth binned coverage and SNV calls
 
-include { SNIFFLES } from '../../../modules/nf-core/sniffles/main'
 include { MOSDEPTH as MOSDEPTH_SPECTRE } from '../../../modules/nf-core/mosdepth/main'
 include { SPECTRE_CNVCALLER } from '../../../modules/local/spectre/cnvcaller/main'
 
-workflow BAM_CALL_SV_CNV {
+workflow BAM_CALL_CNV_SPECTRE {
     take:
     ch_input // channel: [ val(meta), path(bam), path(bai) ]
-    ch_snv // channel: [ val(meta), path(vcf) ] small variant calls for the same samples, used by Spectre
+    ch_snv // channel: [ val(meta), path(vcf) ] small variant calls for the same samples
     ch_fasta // channel: [ val(meta), path(fasta) ]
     ch_spectre_metadata // channel: path(mdr) or [] (built from the fasta when missing)
     ch_spectre_blacklist // channel: path(bed) or []
-    ch_tandem_repeats // channel: [ val(meta), path(bed) ] or [ [:], [] ]
 
     main:
 
-    SNIFFLES(
-        ch_input.map { meta, bam, bai -> [meta, bam, bai, [], []] },
-        ch_fasta,
-        ch_tandem_repeats,
-        true,
-        false,
-    )
-
-    // Spectre needs binned coverage; the window size is set with ext.args (--by) in conf/modules.config
+    // The window size is set with ext.args (--by) in conf/modules.config
     MOSDEPTH_SPECTRE(
         ch_input.map { meta, bam, bai -> [meta, bam, bai, []] },
         ch_fasta,
@@ -43,8 +33,6 @@ workflow BAM_CALL_SV_CNV {
     )
 
     emit:
-    sv_vcf = SNIFFLES.out.vcf // channel: [ val(meta), path(vcf.gz) ]
-    sv_tbi = SNIFFLES.out.tbi // channel: [ val(meta), path(vcf.gz.tbi) ]
     cnv_vcf = SPECTRE_CNVCALLER.out.vcf // channel: [ val(meta), path(vcf) ]
     cnv_bed = SPECTRE_CNVCALLER.out.bed // channel: [ val(meta), path(bed) ]
     karyotype = SPECTRE_CNVCALLER.out.karyotype // channel: [ val(meta), path(txt) ]

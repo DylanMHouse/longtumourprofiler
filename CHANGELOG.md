@@ -11,6 +11,8 @@ Initial release of nf-core/longtumourprofiler, created with the [nf-core](https:
 
 ### `Fixed`
 
+- Spectre, CNVpytor, SpecImmune and modkit pileup now read the LongPhase haplotagged BAM. Sniffles moves out of the Spectre subworkflow (now `BAM_CALL_CNV_SPECTRE`) so its SVs can still be co-phased. With `--phasing false` every downstream step falls back to the alignment BAM, and ClairS phases the tumour itself ([@DylanMHouse](https://github.com/DylanMHouse))
+
 ### `Dependencies`
 
 ### `Deprecated`

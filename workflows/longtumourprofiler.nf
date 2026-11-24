@@ -13,7 +13,8 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_INPUT } from '../modules/nf-core/samt
 include { FASTQ_ALIGN_MINIMAP2 } from '../subworkflows/local/fastq_align_minimap2'
 include { BAM_CONVERT_FASTQ_QC } from '../subworkflows/local/bam_convert_fastq_qc'
 include { BAM_CALL_SNV_CLAIR3 } from '../subworkflows/local/bam_call_snv_clair3'
-include { BAM_CALL_SV_CNV } from '../subworkflows/local/bam_call_sv_cnv'
+include { SNIFFLES } from '../modules/nf-core/sniffles/main'
+include { BAM_CALL_CNV_SPECTRE } from '../subworkflows/local/bam_call_cnv_spectre'
 include { BAM_PHASE_HAPLOTAG_LONGPHASE } from '../subworkflows/local/bam_phase_haplotag_longphase'
 include { BAM_TYPE_IMMUNE_SPECIMMUNE } from '../subworkflows/local/bam_type_immune_specimmune'
 include { CNVPYTOR } from '../modules/local/cnvpytor/main'
@@ -27,7 +28,7 @@ include { HLALOH } from '../modules/local/hlaloh/main'
 include { SCARHRD } from '../modules/local/scarhrd/main'
 include { VCF_NEOANTIGEN_VEP_PVACSEQ } from '../subworkflows/local/vcf_neoantigen_vep_pvacseq/main'
 
-include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
+include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC } from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
 include { BAM_CALL_SV_CNA_TN } from '../subworkflows/local/bam_call_sv_cna_tn/main'
 include { SOMALIER_RAITA_IDENTITY } from '../subworkflows/local/somalier_raita_identity/main'
 include { ONTCONSENSUS } from '../subworkflows/local/ontconsensus/main'
@@ -260,7 +261,7 @@ workflow LONGTUMOURPROFILER {
         error("--scarhrd scores the ASCAT allele-specific copy number segments, so it needs --ascat")
     }
 
-    if ((params.somalier_sites as boolean) != (params.raita_bed as boolean)) {
+    if ((params.somalier_sites as Boolean) != (params.raita_bed as Boolean)) {
         error("The tumour-normal identity check needs both --somalier_sites and --raita_bed")
     }
 
@@ -418,28 +419,18 @@ workflow LONGTUMOURPROFILER {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    SV & CNV CALLS
+    SV CALLS
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    // Spectre uses the Clair3 SNVs of the same sample to estimate diploid coverage
-    BAM_CALL_SV_CNV(
-        ch_input_bam,
-        ch_snv_vcf,
+    // Sniffles runs on the unphased BAM because LongPhase co-phases its SVs
+    SNIFFLES(
+        ch_input_bam.map { meta, bam, bai -> [meta, bam, bai, [], []] },
         ch_fasta,
-        ch_spectre_metadata,
-        ch_spectre_blacklist,
         ch_tandem_repeats,
+        true,
+        false,
     )
-
-    // CNVpytor combines read depth with B-allele frequencies from the Clair3 SNVs
-    if (params.cnvpytor) {
-        CNVPYTOR(
-            ch_input_bam.join(ch_snv_vcf, by: 0),
-            ch_fasta,
-            params.cnvpytor_bin_size,
-        )
-    }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,12 +438,14 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    // Every step from here on reads the haplotagged BAM, or the alignment BAM with --phasing false
+    def ch_phased_bam = ch_input_bam
     def ch_phased_snv_vcf = channel.empty()
     if (params.phasing) {
         // Co-phase each sample's SNVs and Sniffles SVs (and 5mC calls with --longphase_modcall)
         def ch_phase_input = ch_input_bam
             .join(ch_snv_vcf, by: 0)
-            .join(BAM_CALL_SV_CNV.out.sv_vcf, by: 0)
+            .join(SNIFFLES.out.vcf, by: 0)
 
         BAM_PHASE_HAPLOTAG_LONGPHASE(
             ch_phase_input,
@@ -461,9 +454,32 @@ workflow LONGTUMOURPROFILER {
             params.longphase_modcall,
         )
 
-
         ch_phased_bam = BAM_PHASE_HAPLOTAG_LONGPHASE.out.bam.join(BAM_PHASE_HAPLOTAG_LONGPHASE.out.bai, by: 0)
         ch_phased_snv_vcf = BAM_PHASE_HAPLOTAG_LONGPHASE.out.snv_vcf
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CNV CALLS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    // Spectre uses the Clair3 SNVs of the same sample to estimate diploid coverage
+    BAM_CALL_CNV_SPECTRE(
+        ch_phased_bam,
+        ch_snv_vcf,
+        ch_fasta,
+        ch_spectre_metadata,
+        ch_spectre_blacklist,
+    )
+
+    // CNVpytor combines read depth with B-allele frequencies from the Clair3 SNVs
+    if (params.cnvpytor) {
+        CNVPYTOR(
+            ch_phased_bam.join(ch_snv_vcf, by: 0),
+            ch_fasta,
+            params.cnvpytor_bin_size,
+        )
     }
 
     /*
@@ -488,7 +504,7 @@ workflow LONGTUMOURPROFILER {
     def ch_specimmune_outdir = channel.empty()
     if (params.specimmune) {
         BAM_TYPE_IMMUNE_SPECIMMUNE(
-            ch_input_bam,
+            ch_phased_bam,
             ch_fasta,
             channel.fromList(specimmune_genes),
             ch_specimmune_db,
@@ -506,7 +522,7 @@ workflow LONGTUMOURPROFILER {
     // Reads keep their MM/ML tags through SAMTOOLS_FASTQ (-T MM,ML,mv) and minimap2 (-y)
     if (params.methyl) {
         MODKIT_PILEUP(
-            ch_input_bam,
+            ch_phased_bam,
             ch_fasta_fai,
             ch_methyl_bed,
         )
@@ -553,10 +569,8 @@ workflow LONGTUMOURPROFILER {
     }
 
     // Create two independent channels to separate normal vs tumour.
-    def ch_tumour_keyed = ch_samples_by_type.tumour
-        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
-    def ch_normal_keyed = ch_samples_by_type.normal
-        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_tumour_keyed = ch_samples_by_type.tumour.map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_normal_keyed = ch_samples_by_type.normal.map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
 
     // Pair each tumour with its germline sample: [ tumour_meta, tumour_bam, tumour_bai, normal_meta, normal_bam, normal_bai ]
     def ch_tumour_normal_input = ch_tumour_keyed
@@ -580,9 +594,7 @@ workflow LONGTUMOURPROFILER {
     if (params.pvacseq) {
         VCF_NEOANTIGEN_VEP_PVACSEQ(
             BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.clairs_vcf,
-            ch_specimmune_outdir
-                .filter { meta, gene_class, _hla_dir -> gene_class == 'HLA' && meta.type == 'germline' }
-                .map { meta, _gene_class, hla_dir -> [meta, hla_dir] },
+            ch_specimmune_outdir.filter { meta, gene_class, _hla_dir -> gene_class == 'HLA' && meta.type == 'germline' }.map { meta, _gene_class, hla_dir -> [meta, hla_dir] },
             ch_fasta,
             params.genome == 'GRCh37' ? 'GRCh37' : 'GRCh38',
             params.pvacseq_vep_cache_version,
@@ -622,18 +634,15 @@ workflow LONGTUMOURPROFILER {
         'bai',
     )
 
-    def ch_prepare_bamSV = SAMTOOLS_VIEW_PREPARE_SV.out.bam
-        .join(SAMTOOLS_VIEW_PREPARE_SV.out.bai, by: 0)
+    def ch_prepare_bamSV = SAMTOOLS_VIEW_PREPARE_SV.out.bam.join(SAMTOOLS_VIEW_PREPARE_SV.out.bai, by: 0)
 
     def ch_prepare_bamSV_by_type = ch_prepare_bamSV.branch { meta, _bam, _bai ->
         tumour: meta.type == 'tumour'
         normal: meta.type == 'germline'
     }
 
-    def ch_prepare_bamSV_tumour = ch_prepare_bamSV_by_type.tumour
-        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
-    def ch_prepare_bamSV_normal = ch_prepare_bamSV_by_type.normal
-        .map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_prepare_bamSV_tumour = ch_prepare_bamSV_by_type.tumour.map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
+    def ch_prepare_bamSV_normal = ch_prepare_bamSV_by_type.normal.map { meta, bam, bai -> [meta.patient, meta, bam, bai] }
 
     def ch_tumour_normal_forSV = ch_prepare_bamSV_tumour
         .join(ch_prepare_bamSV_normal)
@@ -661,11 +670,8 @@ workflow LONGTUMOURPROFILER {
 
     if (params.annotsv) {
         ANNOTSV_SURVIVOR_ANNOTATE(
-            BAM_CALL_SV_CNA_TN.out.savana_somatic_vcf
-                .join(BAM_CALL_SV_CNA_TN.out.severus_somatic_vcf, by: 0),
-            channel.fromPath(params.annotsv_annotations, type: 'dir', checkIfExists: true)
-                .map { annotations -> [[id: 'annotsv_annotations'], annotations] }
-                .first(),
+            BAM_CALL_SV_CNA_TN.out.savana_somatic_vcf.join(BAM_CALL_SV_CNA_TN.out.severus_somatic_vcf, by: 0),
+            channel.fromPath(params.annotsv_annotations, type: 'dir', checkIfExists: true).map { annotations -> [[id: 'annotsv_annotations'], annotations] }.first(),
         )
 
         // Gene fusion calls from the merged SVs: snpEff + simple_sv_annotation
@@ -690,9 +696,7 @@ workflow LONGTUMOURPROFILER {
 
 
         def ch_hla_loh_input = params.ascat
-            ? ch_hla_loh_pairs
-                .join(BAM_CALL_SV_CNA_TN.out.ascat_purity, by: 0)
-                .join(BAM_CALL_SV_CNA_TN.out.ascat_ploidy, by: 0)
+            ? ch_hla_loh_pairs.join(BAM_CALL_SV_CNA_TN.out.ascat_purity, by: 0).join(BAM_CALL_SV_CNA_TN.out.ascat_ploidy, by: 0)
             : ch_hla_loh_pairs.map { pair -> pair + [[], []] }
 
         HLALOH(
@@ -710,8 +714,7 @@ workflow LONGTUMOURPROFILER {
     if (params.scarhrd) {
         // scarHRD scores the ASCAT allele-specific segments using the ASCAT ploidy
         SCARHRD(
-            BAM_CALL_SV_CNA_TN.out.ascat_segments
-                .join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
+            BAM_CALL_SV_CNA_TN.out.ascat_segments.join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
         )
     }
 
@@ -719,7 +722,7 @@ workflow LONGTUMOURPROFILER {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ONTCONSENSUS: GATHER CONSENSUS VARIANTS FROM CLAIRS AND DEEPSOMATIC
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    */
+     */
 
     // Both callers emit with the tumour meta: [ meta, deepsomatic_vcf, deepsomatic_tbi, clairs_vcf, clairs_tbi ]
     def ch_ontconsenus = BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC.out.deepsomatic_vcf
@@ -734,7 +737,7 @@ workflow LONGTUMOURPROFILER {
     def ch_mask = channel.fromPath(params.consensus_mask, checkIfExists: true)
         .map { mask -> tuple([id: "mask"], mask) }
         .first()
-    
+
     def ch_exome_bed = params.exome_bed
         ? channel.fromPath(params.exome_bed, checkIfExists: true).first()
         : channel.empty()
@@ -744,7 +747,7 @@ workflow LONGTUMOURPROFILER {
         ch_fasta_fai,
         ch_mask,
         ch_exome_bed,
-        )
+    )
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,15 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
-name: "bam_call_sv_cnv"
-description: Call structural variants from long-read alignments with Sniffles, and
-  large copy number variants with Spectre from mosdepth binned coverage and SNV calls.
+name: "bam_call_cnv_spectre"
+description: Call large copy number variants from long-read alignments with Spectre,
+  from mosdepth binned coverage and SNV calls.
 keywords:
-  - structural variants
   - cnv
-  - sniffles
   - spectre
   - long-read
 components:
-  - sniffles
   - mosdepth
   - spectre/cnvcaller
 input:
@@ -22,7 +19,7 @@ input:
   - ch_snv:
       type: file
       description: |
-        SNV calls for the same samples (e.g. from Clair3), used by Spectre
+        SNV calls for the same samples (e.g. from Clair3)
         Structure: [ val(meta), path(vcf) ]
       pattern: "*.{vcf,vcf.gz}"
   - ch_fasta:
@@ -31,19 +28,19 @@ input:
         Reference genome
         Structure: [ val(meta), path(fasta) ]
       pattern: "*.{fa,fasta}"
+  - ch_spectre_metadata:
+      type: file
+      description: |
+        Spectre N-region metadata, or [] to build it from the fasta
+        Structure: path(mdr)
+      pattern: "*.mdr"
+  - ch_spectre_blacklist:
+      type: file
+      description: |
+        Regions for Spectre to ignore, or []
+        Structure: path(bed)
+      pattern: "*.bed"
 output:
-  - sv_vcf:
-      type: file
-      description: |
-        Sniffles SV calls
-        Structure: [ val(meta), path(vcf.gz) ]
-      pattern: "*.vcf.gz"
-  - sv_tbi:
-      type: file
-      description: |
-        Index of the Sniffles SV calls
-        Structure: [ val(meta), path(vcf.gz.tbi) ]
-      pattern: "*.vcf.gz.tbi"
   - cnv_vcf:
       type: file
       description: |
