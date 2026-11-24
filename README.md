@@ -21,23 +21,23 @@
 
 ## Introduction
 
-**nf-core/longtumourprofiler** is a bioinformatics pipeline that performs tumou-normal variant calling on Oxford Nanopore Technologies (ONT) long-read sequencing data.
+**nf-core/longtumourprofiler** is a bioinformatics pipeline that performs tumour-normal variant calling on Oxford Nanopore Technologies (ONT) long-read sequencing data.
 The advantage of this pipeline includes a fully detailed molecular profile of samples containing methylation information, clonality, mutational signitures,
 mutational burden, variant calls and more in a single portable PDF. The pipeline requires the input to be BAM, or fastq from dorado basecalled files with
 their methylation tags preserved with --emit-moves flag.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+This pipeline is currently under development. Updates on this pipeline can be found on Slack through the #longread-cancer channel in nf-core.
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+![](/home/dylan/documents/projects/longtumourprofiler_project/longtumourprofiler/docs/images/longtumourprofiler_metro_map_dark.png)
 
-1. Prepare input & alignment.
-1. Read QC ([`NanoPlot`](https://github.com/wdecoster/NanoPlot))
+
+1. Prepare input (`samtools cat/fastq`).
+1. Read QC
+([`NanoPlot`](https://github.com/wdecoster/Nanoplot))
+2. Input Alignment (`minimap2`)
+3. Read statistics & coverage (`mosdepth`)
+4. Small variants, indels & phasing.
+
 
 ## Usage
 

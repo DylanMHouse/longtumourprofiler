@@ -1,0 +1,154 @@
+%%metro title: nf-core/longtumourprofiler
+%%metro logo: nf-core-longtumourprofiler_logo_light.png | nf-core-longtumourprofiler_logo_dark.png
+%%metro style: nfcore
+%%metro line: tumour | Tumour only | #D55E00
+%%metro line: germline | Germline only | #0072B2
+%%metro line: tumour_normal | Tumour-normal | #009E73
+%%metro legend: bl
+%%metro file: reads_in | FASTQ/BAM
+%%metro file: nanodx_out | TSV | Tumour class
+%%metro file: pharmcat_out | HTML | PGx report
+%%metro file: pcgr_out | HTML | PCGR report
+
+%%metro grid: preprocessing | 0,0
+%%metro grid: phasing | 1,0
+%%metro grid: per_sample | 2,0
+%%metro grid: methylation | 3,0
+%%metro grid: germline_report | 3,1
+%%metro grid: identity | 1,2
+%%metro grid: somatic_snv | 2,2
+%%metro grid: somatic_sv | 3,2
+%%metro grid: profiling | 4,2
+
+%% nf-metro 2.1.0 cannot fork a line that is not defined first, so parallel callers (ClairS/DeepSomatic, SAVANA/Severus) are drawn in sequence
+
+graph LR
+    subgraph preprocessing [Pre-processing and alignment]
+        reads_in[ ]
+        samtools_cat[SAMtools cat]
+        samtools_fastq[SAMtools fastq]
+        nanoplot[NanoPlot]
+        minimap2[minimap2]
+        samtools_stats[SAMtools stats]
+        mosdepth[mosdepth]
+
+        reads_in -->|tumour,germline,tumour_normal| samtools_cat
+        samtools_cat -->|tumour,germline,tumour_normal| samtools_fastq
+        samtools_fastq -->|tumour,germline,tumour_normal| nanoplot
+        nanoplot -->|tumour,germline,tumour_normal| minimap2
+        minimap2 -->|tumour,germline,tumour_normal| samtools_stats
+        samtools_stats -->|tumour,germline,tumour_normal| mosdepth
+    end
+
+    subgraph phasing [Small variants, SVs and phasing]
+        clair3[Clair3]
+        sniffles[Sniffles]
+        longphase_phase[LongPhase phase]
+        longphase_haplotag[LongPhase haplotag]
+
+        clair3 -->|tumour,germline,tumour_normal| sniffles
+        sniffles -->|tumour,germline,tumour_normal| longphase_phase
+        longphase_phase -->|tumour,germline,tumour_normal| longphase_haplotag
+    end
+
+    subgraph per_sample [Per-sample profiling]
+        spectre[Spectre]
+        cnvpytor[CNVpytor]
+        strdust[STRdust]
+        specimmune[SpecImmune]
+        modkit[modkit pileup]
+
+        spectre -->|tumour,germline| cnvpytor
+        cnvpytor -->|tumour,germline| strdust
+        strdust -->|tumour,germline| specimmune
+        specimmune -->|tumour,germline| modkit
+    end
+
+    subgraph methylation [Methylation classification]
+        liftover[LiftOver]
+        bedtools_intersect[BEDTools intersect]
+        nanodx[nanoDx]
+        nanodx_out[ ]
+
+        liftover -->|tumour| bedtools_intersect
+        bedtools_intersect -->|tumour| nanodx
+        nanodx -->|tumour| nanodx_out
+    end
+
+    subgraph germline_report [Germline reporting]
+        cpsr[CPSR]
+        pharmcat[PharmCAT]
+        pharmcat_out[ ]
+
+        cpsr -->|germline| pharmcat
+        pharmcat -->|germline| pharmcat_out
+    end
+
+    subgraph identity [Sample identity]
+        somalier_extract[Somalier extract]
+        somalier_relate[Somalier relate]
+        raita[RAITA]
+
+        somalier_extract -->|tumour_normal| somalier_relate
+        somalier_relate -->|tumour_normal| raita
+    end
+
+    subgraph somatic_snv [Somatic SNVs and indels]
+        clairs[ClairS]
+        deepsomatic[DeepSomatic]
+        consensus[ONT consensus]
+        mafsmith[MAFsmith]
+
+        clairs -->|tumour_normal| deepsomatic
+        deepsomatic -->|tumour_normal| consensus
+        consensus -->|tumour_normal| mafsmith
+    end
+
+    subgraph somatic_sv [Somatic SVs and copy number]
+        samtools_view[SAMtools view]
+        savana[SAVANA]
+        severus[Severus]
+        wakhan[Wakhan]
+        ascat[ASCAT]
+        survivor[SURVIVOR merge]
+        annotsv[AnnotSV]
+        snpeff[snpEff]
+        simple_sv[simple_sv_annotation]
+
+        samtools_view -->|tumour_normal| savana
+        savana -->|tumour_normal| severus
+        severus -->|tumour_normal| wakhan
+        wakhan -->|tumour_normal| ascat
+        ascat -->|tumour_normal| survivor
+        survivor -->|tumour_normal| annotsv
+        annotsv -->|tumour_normal| snpeff
+        snpeff -->|tumour_normal| simple_sv
+    end
+
+    subgraph profiling [Tumour profiling and reporting]
+        hla_loh[HLA LOH]
+        scarhrd[scarHRD]
+        sigprofiler[SigProfilerAssignment]
+        sv_signatures[SV signatures]
+        vep[VEP]
+        pvacseq[pVACseq]
+        pcgr[PCGR]
+        pcgr_out[ ]
+
+        hla_loh -->|tumour_normal| scarhrd
+        scarhrd -->|tumour_normal| sigprofiler
+        sigprofiler -->|tumour_normal| sv_signatures
+        sv_signatures -->|tumour_normal| vep
+        vep -->|tumour_normal| pvacseq
+        pvacseq -->|tumour_normal| pcgr
+        pcgr -->|tumour_normal| pcgr_out
+    end
+
+    mosdepth -->|tumour,germline,tumour_normal| clair3
+    longphase_haplotag -->|tumour,germline| spectre
+    modkit -->|tumour| liftover
+    modkit -->|germline| cpsr
+    longphase_haplotag -->|tumour_normal| somalier_extract
+    raita -->|tumour_normal| clairs
+    mafsmith -->|tumour_normal| samtools_view
+    simple_sv -->|tumour_normal| hla_loh
