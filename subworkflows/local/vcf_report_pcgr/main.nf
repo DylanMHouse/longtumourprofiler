@@ -27,7 +27,7 @@ workflow VCF_REPORT_PCGR {
         .join(ch_cpsr.map { meta, classification, conf_yaml -> [meta, [classification, conf_yaml]] }, by: 0, remainder: true)
         .join(ch_purity, by: 0, remainder: true)
         .join(ch_ploidy, by: 0, remainder: true)
-        .filter { _meta, vcf_tbi, _cna, _cpsr, _purity, _ploidy -> vcf_tbi != null }
+        .filter { row -> row[1] != null }
         .map { meta, vcf_tbi, cna, cpsr, purity, ploidy ->
             [
                 meta,
