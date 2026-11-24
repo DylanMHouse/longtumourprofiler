@@ -1,19 +1,18 @@
 nextflow_workflow {
 
-    name "Test Subworkflow BAM_CALL_SV_CNV"
+    name "Test Subworkflow BAM_CALL_CNV_SPECTRE"
     script "../main.nf"
-    workflow "BAM_CALL_SV_CNV"
+    workflow "BAM_CALL_CNV_SPECTRE"
 
     tag "subworkflows"
     tag "subworkflows_local"
-    tag "subworkflows/bam_call_sv_cnv"
-    tag "sniffles"
+    tag "subworkflows/bam_call_cnv_spectre"
     tag "mosdepth"
     tag "spectre/cnvcaller"
     tag "clair3"
 
     // COLO829 (tumour) and COLO829BL (matched normal) ONT R10.4.1 Dorado sup BAMs, chr22:24-25Mb.
-    // Coverage is far too low for Spectre to call CNVs, so this checks the SV/CNV calls are wired per sample.
+    // Coverage is far too low for Spectre to call CNVs, so this checks the CNV calls are wired per sample.
     setup {
         run("CLAIR3") {
             script "../../../../modules/nf-core/clair3/main.nf"
@@ -74,7 +73,6 @@ nextflow_workflow {
                 ]
                 input[3] = []
                 input[4] = []
-                input[5] = [ [:], [] ]
                 """
             }
         }
@@ -86,8 +84,6 @@ nextflow_workflow {
                 // Spectre names its VCF sample column after the sample ID it was given
                 { assert workflow.out.cnv_vcf.every { meta, vcf -> path(vcf).text.contains("##Spectre_sample=${meta.id}") } },
                 { assert snapshot(
-                    by_id(workflow.out.sv_vcf.collect { meta, vcf -> [ meta, file(vcf).name, path(vcf).vcf.variantsMD5 ] }),
-                    by_id(workflow.out.sv_tbi.collect { meta, tbi -> [ meta, file(tbi).name ] }),
                     by_id(workflow.out.cnv_vcf),
                     by_id(workflow.out.cnv_bed),
                     by_id(workflow.out.karyotype)
@@ -122,7 +118,6 @@ nextflow_workflow {
                 ]
                 input[3] = []
                 input[4] = []
-                input[5] = [ [:], [] ]
                 """
             }
         }
@@ -132,8 +127,6 @@ nextflow_workflow {
             assertAll(
                 { assert workflow.success },
                 { assert snapshot(
-                    by_id(workflow.out.sv_vcf),
-                    by_id(workflow.out.sv_tbi),
                     by_id(workflow.out.cnv_vcf),
                     by_id(workflow.out.cnv_bed),
                     by_id(workflow.out.karyotype)
