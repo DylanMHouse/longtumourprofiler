@@ -544,6 +544,14 @@
             "type": "boolean",
             "description": "Score homologous recombination deficiency (HRD-LOH, telomeric allelic imbalance, LST and HRD-sum) from the ASCAT allele-specific copy number segments with scarHRD. Needs --ascat"
         },
+        "pyclonevi": {
+            "type": "boolean",
+            "description": "Cluster the consensus somatic SNVs into clonal populations with PyClone-VI, using the ASCAT allele-specific copy number and purity. Needs --ascat"
+        },
+        "phyclone": {
+            "type": "boolean",
+            "description": "Build clone trees over the PyClone-VI clusters with PhyClone: the MAP tree, its plot and a report of every sampled topology. Needs --pyclonevi"
+        },
         "hla_loh": {
             "type": "boolean",
             "description": "Detect loss of heterozygosity across the HLA genes in tumour-normal pairs from the phased germline SNVs. Needs --phasing. Uses the ASCAT purity with --ascat"

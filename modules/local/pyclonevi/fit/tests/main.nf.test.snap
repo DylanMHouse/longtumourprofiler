@@ -1,0 +1,86 @@
+{
+    "two clones": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.pyclonevi.tsv:md5,4564560c418c81b7cecf82ed3dcabb15"
+                ]
+            ],
+            "test.pyclonevi.h5",
+            {
+                "versions_pyclonevi": [
+                    [
+                        "PYCLONEVI_FIT",
+                        "pyclone-vi",
+                        "0.2.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-25T10:05:24.273494091",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "two clones - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi.h5:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi.tsv:md5,c75e47fb19c785aaa10fda71242714c0"
+                    ]
+                ],
+                "2": [
+                    [
+                        "PYCLONEVI_FIT",
+                        "pyclone-vi",
+                        "0.2.0"
+                    ]
+                ],
+                "h5": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi.h5:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "results": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi.tsv:md5,c75e47fb19c785aaa10fda71242714c0"
+                    ]
+                ],
+                "versions_pyclonevi": [
+                    [
+                        "PYCLONEVI_FIT",
+                        "pyclone-vi",
+                        "0.2.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-25T10:05:32.579323732",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

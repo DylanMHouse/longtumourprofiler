@@ -1,0 +1,112 @@
+{
+    "consensus vcf - ascat segments - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi_input.tsv:md5,c06a317b5758f7f970df133bc49e5f78"
+                    ]
+                ],
+                "1": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "cyvcf2",
+                        "0.35.0"
+                    ]
+                ],
+                "2": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "pandas",
+                        "3.1.1"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi_input.tsv:md5,c06a317b5758f7f970df133bc49e5f78"
+                    ]
+                ],
+                "versions_cyvcf2": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "cyvcf2",
+                        "0.35.0"
+                    ]
+                ],
+                "versions_pandas": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "pandas",
+                        "3.1.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-25T11:16:47.210842566",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    },
+    "consensus vcf - ascat segments": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi_input.tsv:md5,7c61e72eafd959091aff05014cf0c10e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "cyvcf2",
+                        "0.35.0"
+                    ]
+                ],
+                "2": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "pandas",
+                        "3.1.1"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.pyclonevi_input.tsv:md5,7c61e72eafd959091aff05014cf0c10e"
+                    ]
+                ],
+                "versions_cyvcf2": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "cyvcf2",
+                        "0.35.0"
+                    ]
+                ],
+                "versions_pandas": [
+                    [
+                        "PYCLONEVI_PREPARE",
+                        "pandas",
+                        "3.1.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-25T11:48:58.344746228",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}

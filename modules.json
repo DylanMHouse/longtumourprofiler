@@ -125,11 +125,6 @@
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
                         "installed_by": ["modules"]
                     },
-                    "pyclonevi": {
-                        "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
-                        "installed_by": ["modules"]
-                    },
                     "samtools/cat": {
                         "branch": "master",
                         "git_sha": "80eb474060aa4aa6d7b4b00e0dc785174f156a28",

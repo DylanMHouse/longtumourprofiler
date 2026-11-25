@@ -9,6 +9,9 @@ Initial release of nf-core/longtumourprofiler, created with the [nf-core](https:
 
 ### `Added`
 
+- Clonal deconvolution with PyClone-VI (`--pyclonevi`) from the consensus somatic SNVs and the ASCAT copy number and purity. Replaces the unused nf-core `pyclonevi` module.
+- Clone trees with PhyClone (`--phyclone`) over the PyClone-VI clusters: MAP tree and tables, topology report and a MAP tree plot. The plot script is adapted from PhyClone-Workflow and stays under GPL-3.0 (`assets/licenses/GPL-3.0.txt`).
+
 ### `Fixed`
 
 ### `Dependencies`

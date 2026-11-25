@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - "conda-forge::colorcet=3.2.1"
+  - "conda-forge::graphviz=14.1.2"
+  - "conda-forge::networkx=3.7"
+  - "conda-forge::pandas=3.1.1"
+  - "conda-forge::pygraphviz=2.0.4"
+  - "conda-forge::python=3.12"
+  - "conda-forge::scikit-bio=0.7.4"
+  - "conda-forge::seaborn=0.13.2"

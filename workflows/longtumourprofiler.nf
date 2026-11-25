@@ -25,6 +25,12 @@ include { VCF_REPORT_PCGR } from '../subworkflows/local/vcf_report_pcgr'
 include { PHARMCAT_PIPELINE } from '../modules/local/pharmcat/pipeline/main'
 include { HLALOH } from '../modules/local/hlaloh/main'
 include { SCARHRD } from '../modules/local/scarhrd/main'
+include { PYCLONEVI_PREPARE } from '../modules/local/pyclonevi/prepare/main'
+include { PYCLONEVI_FIT } from '../modules/local/pyclonevi/fit/main'
+include { PHYCLONE_RUN } from '../modules/local/phyclone/run/main'
+include { PHYCLONE_MAP } from '../modules/local/phyclone/map/main'
+include { PHYCLONE_TOPOLOGYREPORT } from '../modules/local/phyclone/topologyreport/main'
+include { PHYCLONE_PLOTTREE } from '../modules/local/phyclone/plottree/main'
 include { VCF_NEOANTIGEN_VEP_PVACSEQ } from '../subworkflows/local/vcf_neoantigen_vep_pvacseq/main'
 
 include { BAM_CALL_SOMATIC_CLAIRS_DEEPSOMATIC} from '../subworkflows/local/bam_call_somatic_clairs_deepsomatic/main'
@@ -258,6 +264,12 @@ workflow LONGTUMOURPROFILER {
     }
     if (params.scarhrd && !params.ascat) {
         error("--scarhrd scores the ASCAT allele-specific copy number segments, so it needs --ascat")
+    }
+    if (params.pyclonevi && !params.ascat) {
+        error("--pyclonevi takes its copy number and purity from ASCAT, so it needs --ascat")
+    }
+    if (params.phyclone && !params.pyclonevi) {
+        error("--phyclone builds trees from the PyClone-VI clusters, so it needs --pyclonevi")
     }
 
     if ((params.somalier_sites as boolean) != (params.raita_bed as boolean)) {
@@ -734,7 +746,7 @@ workflow LONGTUMOURPROFILER {
     def ch_mask = channel.fromPath(params.consensus_mask, checkIfExists: true)
         .map { mask -> tuple([id: "mask"], mask) }
         .first()
-    
+
     def ch_exome_bed = params.exome_bed
         ? channel.fromPath(params.exome_bed, checkIfExists: true).first()
         : channel.empty()
@@ -745,6 +757,60 @@ workflow LONGTUMOURPROFILER {
         ch_mask,
         ch_exome_bed,
         )
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CLONAL DECONVOLUTION WITH PYCLONE-VI
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.pyclonevi) {
+        def ch_ascat_solved = BAM_CALL_SV_CNA_TN.out.ascat_purity
+            .filter { meta, purity ->
+                if (purity <= 0) {
+                    log.warn("Skipping PyClone-VI for ${meta.id}: ASCAT found no purity solution")
+                }
+                purity > 0
+            }
+
+        PYCLONEVI_PREPARE(
+            ONTCONSENSUS.out.consensus_vcf
+                .join(BAM_CALL_SV_CNA_TN.out.ascat_segments, by: 0)
+                .join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
+                .join(ch_ascat_solved, by: 0)
+                .map { meta, vcf, segments, purityploidy, _purity -> [meta, vcf, segments, purityploidy] }
+        )
+
+        PYCLONEVI_FIT(
+            PYCLONEVI_PREPARE.out.tsv
+                .filter { meta, tsv ->
+                    def has_mutations = tsv.countLines() > 1
+                    if (!has_mutations) {
+                        log.warn("Skipping PyClone-VI for ${meta.id}: no SNVs left on ASCAT copy number segments")
+                    }
+                    has_mutations
+                }
+        )
+    }
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CLONE TREES WITH PHYCLONE
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
+    if (params.phyclone) {
+        PHYCLONE_RUN(
+            PYCLONEVI_PREPARE.out.tsv.join(PYCLONEVI_FIT.out.results, by: 0)
+        )
+
+        PHYCLONE_MAP(PHYCLONE_RUN.out.trace)
+        PHYCLONE_TOPOLOGYREPORT(PHYCLONE_RUN.out.trace)
+
+        PHYCLONE_PLOTTREE(
+            PHYCLONE_MAP.out.tree.join(PHYCLONE_MAP.out.table, by: 0)
+        )
+    }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
