@@ -1,0 +1,65 @@
+nextflow_process {
+
+    name "Test Process PYCLONEVI_PREPARE"
+    script "../main.nf"
+    process "PYCLONEVI_PREPARE"
+
+    tag "modules"
+    tag "modules_local"
+    tag "pyclonevi"
+    tag "pyclonevi/prepare"
+
+    // Synthetic consensus-style VCF with one record per filter outcome, against
+    // ASCAT segments without the 'chr' prefix
+    test("consensus vcf - ascat segments") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file("${moduleDir}/tests/data/test.vcf.gz", checkIfExists: true),
+                    file("${moduleDir}/tests/data/test.segments.txt", checkIfExists: true),
+                    file("${moduleDir}/tests/data/test.purityploidy.txt", checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert path(process.out.tsv[0][1]).readLines().size() == 3 },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+    test("consensus vcf - ascat segments - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file("${moduleDir}/tests/data/test.vcf.gz", checkIfExists: true),
+                    file("${moduleDir}/tests/data/test.segments.txt", checkIfExists: true),
+                    file("${moduleDir}/tests/data/test.purityploidy.txt", checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

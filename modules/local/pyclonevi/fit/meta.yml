@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "pyclonevi_fit"
+description: |
+  Infers the clonal population structure of a tumour with PyClone-VI from variant read counts,
+  allele-specific copy number and purity, then writes the per-mutation cluster assignments.
+keywords:
+  - clonal deconvolution
+  - subclonal reconstruction
+  - cancer cell fraction
+  - pyclone-vi
+tools:
+  - "pyclone-vi":
+      description: |
+        A computationally efficient Bayesian method for inferring the clonal population
+        structure of cancers from variant allele frequencies and copy number.
+      homepage: "https://github.com/Roth-Lab/pyclone-vi"
+      documentation: "https://github.com/Roth-Lab/pyclone-vi"
+      tool_dev_url: "https://github.com/Roth-Lab/pyclone-vi"
+      doi: "10.1186/s12859-020-03919-2"
+      licence: ["GPL v3-or-later"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - tsv:
+        type: file
+        description: |
+          PyClone-VI input table (mutation_id, sample_id, ref_counts, alt_counts, normal_cn,
+          major_cn, minor_cn and optionally tumour_content and error_rate)
+        pattern: "*.tsv"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+
+output:
+  h5:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.pyclonevi.h5":
+          type: file
+          description: All PyClone-VI fits, from which the best fit is written
+          pattern: "*.pyclonevi.h5"
+          ontologies:
+            - edam: http://edamontology.org/format_3590 # HDF5
+  results:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.pyclonevi.tsv":
+          type: file
+          description: |
+            Best fit with one row per mutation and sample (mutation_id, sample_id, cluster_id,
+            cellular_prevalence, cellular_prevalence_std, cluster_assignment_prob)
+          pattern: "*.pyclonevi.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_pyclonevi:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "pyclone-vi":
+          type: string
+          description: The name of the tool
+      - "pyclone-vi --version | sed 's/.*version //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pyclone-vi:
+          type: string
+          description: The name of the tool
+      - "pyclone-vi --version | sed 's/.*version //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"

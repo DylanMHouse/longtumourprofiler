@@ -1,0 +1,66 @@
+nextflow_process {
+
+    name "Test Process PYCLONEVI_FIT"
+    script "../main.nf"
+    process "PYCLONEVI_FIT"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_local"
+    tag "pyclonevi"
+    tag "pyclonevi/fit"
+
+    // 50 simulated SNVs from a clone at CCF 1.0 and a subclone at CCF 0.35, purity 0.7
+    test("two clones") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file("${moduleDir}/tests/data/test.pyclonevi_input.tsv", checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            def clusters = path(process.out.results[0][1]).readLines().drop(1)*.split('\t')*.getAt(2).unique()
+            assertAll(
+                { assert clusters.size() == 2 },
+                { assert snapshot(
+                    process.out.results,
+                    file(process.out.h5[0][1]).name,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+
+    }
+
+    test("two clones - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file("${moduleDir}/tests/data/test.pyclonevi_input.tsv", checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

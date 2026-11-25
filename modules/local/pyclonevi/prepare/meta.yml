@@ -1,0 +1,126 @@
+name: "pyclonevi_prepare"
+description: |
+  Builds the PyClone-VI input table from the ClairS/DeepSomatic consensus VCF and ASCAT output.
+  Each autosomal SNV is placed on the ASCAT segment that covers it and written with its tumour
+  read counts, the segment's major and minor copy number and the ASCAT purity.
+keywords:
+  - clonal deconvolution
+  - pyclone-vi
+  - copy number
+  - somatic mutations
+  - ascat
+tools:
+  - "pyclonevi_prepare.py":
+      description: |
+        Pipeline script that reads the tumour FORMAT/AD read counts with cyvcf2, joins them to
+        the ASCAT segments with pandas and writes the PyClone-VI input format.
+      homepage: "https://github.com/Roth-Lab/pyclone-vi"
+      documentation: "https://github.com/Roth-Lab/pyclone-vi#input-format"
+      licence: ["MIT"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - vcf:
+        type: file
+        description: ClairS/DeepSomatic consensus VCF with one sample, the tumour, carrying FORMAT/AD
+        pattern: "*.vcf{,.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3016 # VCF
+    - segments:
+        type: file
+        description: ASCAT allele-specific segments (columns sample, chr, startpos, endpos, nMajor, nMinor)
+        pattern: "*segments.txt"
+    - purityploidy:
+        type: file
+        description: ASCAT purity and ploidy table (columns AberrantCellFraction, Ploidy)
+        pattern: "*purityploidy.txt"
+
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.pyclonevi_input.tsv":
+          type: file
+          description: |
+            PyClone-VI input table (mutation_id, sample_id, ref_counts, alt_counts, normal_cn,
+            major_cn, minor_cn, tumour_content). Holds only the header when no mutation passes.
+          pattern: "*.pyclonevi_input.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_cyvcf2:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "cyvcf2":
+          type: string
+          description: The name of the tool
+      - "python -c 'import cyvcf2; print(cyvcf2.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_pandas:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "pandas":
+          type: string
+          description: The name of the tool
+      - "python -c 'import pandas; print(pandas.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - cyvcf2:
+          type: string
+          description: The name of the tool
+      - "python -c 'import cyvcf2; print(cyvcf2.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - pandas:
+          type: string
+          description: The name of the tool
+      - "python -c 'import pandas; print(pandas.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/cyvcf2_numpy_pandas:42ddc549a9fa67d2
+      build_id: bd-42ddc549a9fa67d2_1
+      scan_id: sc-2bf9aab0d02f1adf_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/cyvcf2_numpy_pandas:699767bb316a199c
+      build_id: bd-699767bb316a199c_1
+      scan_id: sc-a49e6c166d19fcc7_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/cyvcf2_numpy_pandas:8e588179c995881c
+      build_id: bd-8e588179c995881c_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/84/84073edfa808b06614ca5278a21d4e4b20992245934144df530e41a61b488488/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/cyvcf2_numpy_pandas:b90c58a2a0382686
+      build_id: bd-b90c58a2a0382686_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e5/e57b3a925545d64a38909545d48bf2263d08879b694d3e8a4f42575edb21fd69/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/pyclonevi/prepare/.conda-lock/linux_amd64-bd-699767bb316a199c_1.txt
+    linux/arm64:
+      lock_file: modules/local/pyclonevi/prepare/.conda-lock/linux_arm64-bd-42ddc549a9fa67d2_1.txt

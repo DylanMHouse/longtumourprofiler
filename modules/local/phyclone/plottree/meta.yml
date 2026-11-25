@@ -1,0 +1,117 @@
+name: "phyclone_plottree"
+description: |
+  Draws the PhyClone MAP tree with one node per clone, labelled with its number of SNVs.
+  Uses plot_phyclone_tree.py adapted from PhyClone-Workflow (GPL-3.0).
+keywords:
+  - clonal evolution
+  - phylogeny
+  - plot
+  - phyclone
+tools:
+  - "plot_phyclone_tree.py":
+      description: Tree plot script from PhyClone-Workflow, drawn with Graphviz
+      homepage: "https://github.com/Roth-Lab/PhyClone-Workflow"
+      documentation: "https://github.com/Roth-Lab/PhyClone-Workflow"
+      tool_dev_url: "https://github.com/Roth-Lab/PhyClone-Workflow"
+      licence: ["GPL v3"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - tree:
+        type: file
+        description: MAP clone tree from phyclone map
+        pattern: "*.nwk"
+        ontologies:
+          - edam: http://edamontology.org/format_1910 # newick
+    - table:
+        type: file
+        description: MAP results table from phyclone map (clone_id and mutation_id columns)
+        pattern: "*.tsv"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+
+output:
+  png:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "${prefix}.phyclone_map_tree.png":
+          type: file
+          description: MAP clone tree plot
+          pattern: "*.phyclone_map_tree.png"
+          ontologies:
+            - edam: http://edamontology.org/format_3603 # PNG
+  versions_graphviz:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "graphviz":
+          type: string
+          description: The name of the tool
+      - "dot -V 2>&1 | sed 's/.*version \\([^ ]*\\).*/\\1/'":
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_scikit_bio:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "scikit-bio":
+          type: string
+          description: The name of the tool
+      - "python -c 'import skbio; print(skbio.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - graphviz:
+          type: string
+          description: The name of the tool
+      - "dot -V 2>&1 | sed 's/.*version \\([^ ]*\\).*/\\1/'":
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - scikit-bio:
+          type: string
+          description: The name of the tool
+      - "python -c 'import skbio; print(skbio.__version__)'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@DylanMHouse"
+maintainers:
+  - "@DylanMHouse"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/colorcet_graphviz_networkx_pandas_pruned:3417a3b632a5429c
+      build_id: bd-3417a3b632a5429c_1
+      scan_id: sc-5114fbbc4cae7d66_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/colorcet_graphviz_networkx_pandas_pruned:7afd8d1e224e1b26
+      build_id: bd-7afd8d1e224e1b26_1
+      scan_id: sc-5f0de732a69a17e9_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/colorcet_graphviz_networkx_pandas_pruned:5a8503c5f432180a
+      build_id: bd-5a8503c5f432180a_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4f/4f538dc809dba123917231edd980ca4163f93dbb39d855d8e1d40c4e98310894/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/colorcet_graphviz_networkx_pandas_pruned:2162b55df54d83e6
+      build_id: bd-2162b55df54d83e6_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/88/88837692f8fc42ed5ad1acfde3554d1c0abca8599a20a594e58a57df4595de7f/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/phyclone/plottree/.conda-lock/linux_amd64-bd-3417a3b632a5429c_1.txt
