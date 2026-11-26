@@ -5,7 +5,7 @@ process DEEPSOMATIC {
     tag "$meta.id"
     label 'process_high'
 
-    container "docker.io/google/deepsomatic:1.10.0" // Keep in sync with versions_deepsomatic.
+    container "docker.io/google/deepsomatic:1.10.0" 
     input:
     tuple val(meta), path(input_normal), path(index_normal), path(input_tumor), path(index_tumor), path(intervals)
     tuple val(meta2), path(fasta), path(fai)
@@ -14,8 +14,8 @@ process DEEPSOMATIC {
     output:
     tuple val(meta), path("${prefix}.vcf.gz")      ,  emit: vcf
     tuple val(meta), path("${prefix}.vcf.gz.tbi")  ,  emit: vcf_tbi
-    tuple val(meta), path("${prefix}.g.vcf.gz")    ,  emit: gvcf
-    tuple val(meta), path("${prefix}.g.vcf.gz.tbi"),  emit: gvcf_tbi
+    tuple val(meta), path("${prefix}.g.vcf.gz")    ,  emit: gvcf    , optional: true
+    tuple val(meta), path("${prefix}.g.vcf.gz.tbi"),  emit: gvcf_tbi, optional: true
     tuple val("${task.process}"), val("deepsomatic"), val("1.10.0"), emit: versions_deepsomatic, topic: versions
 
     when:
@@ -36,7 +36,6 @@ process DEEPSOMATIC {
         --reads_normal=${input_normal} \\
         --reads_tumor=${input_tumor} \\
         --output_vcf=${prefix}.vcf.gz \\
-        --output_gvcf=${prefix}.g.vcf.gz \\
         ${args} \\
         ${regions} \\
         --intermediate_results_dir=tmp \\
