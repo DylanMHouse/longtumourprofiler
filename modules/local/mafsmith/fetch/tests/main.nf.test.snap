@@ -1,0 +1,33 @@
+{
+    "grch38 - stub": {
+        "content": [
+            {
+                "0": [
+                    "genes.gff3.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                "1": [
+                    [
+                        "MAFSMITH_FETCH",
+                        "mafsmith",
+                        "0.1.0"
+                    ]
+                ],
+                "gff3": [
+                    "genes.gff3.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                "versions_mafsmith": [
+                    [
+                        "MAFSMITH_FETCH",
+                        "mafsmith",
+                        "0.1.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-26T17:59:07.619611398",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.6"
+        }
+    }
+}
