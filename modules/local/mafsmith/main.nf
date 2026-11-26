@@ -1,5 +1,5 @@
 process MAFSMITH {
-    tag "$meta.id"
+    tag "${meta.id}"
     label 'process_medium'
 
     container 'ghcr.io/dylanmhouse/mafsmith:0.1.0-e009e98'
@@ -7,6 +7,7 @@ process MAFSMITH {
     input:
     tuple val(meta), path(vcf)
     tuple val(meta2), path(fasta), path(fai)
+    path gff3
 
     output:
     tuple val(meta), path("${prefix}.maf"), emit: maf
@@ -23,6 +24,7 @@ process MAFSMITH {
         -i ${vcf} \\
         -o ${prefix}.maf \\
         --ref-fasta ${fasta} \\
+        --gff3 ${gff3} \\
         ${args}
     """
 

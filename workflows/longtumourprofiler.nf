@@ -759,6 +759,7 @@ workflow LONGTUMOURPROFILER {
         ch_fasta_fai,
         ch_mask,
         ch_exome_bed,
+        params.genome.toLowerCase(),
     )
 
     /*
@@ -768,31 +769,25 @@ workflow LONGTUMOURPROFILER {
      */
 
     if (params.pyclonevi) {
-        def ch_ascat_solved = BAM_CALL_SV_CNA_TN.out.ascat_purity
-            .filter { meta, purity ->
-                if (purity <= 0) {
-                    log.warn("Skipping PyClone-VI for ${meta.id}: ASCAT found no purity solution")
-                }
-                purity > 0
+        def ch_ascat_solved = BAM_CALL_SV_CNA_TN.out.ascat_purity.filter { meta, purity ->
+            if (purity <= 0) {
+                log.warn("Skipping PyClone-VI for ${meta.id}: ASCAT found no purity solution")
             }
+            purity > 0
+        }
 
         PYCLONEVI_PREPARE(
-            ONTCONSENSUS.out.consensus_vcf
-                .join(BAM_CALL_SV_CNA_TN.out.ascat_segments, by: 0)
-                .join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0)
-                .join(ch_ascat_solved, by: 0)
-                .map { meta, vcf, segments, purityploidy, _purity -> [meta, vcf, segments, purityploidy] }
+            ONTCONSENSUS.out.consensus_vcf.join(BAM_CALL_SV_CNA_TN.out.ascat_segments, by: 0).join(BAM_CALL_SV_CNA_TN.out.ascat_purityploidy, by: 0).join(ch_ascat_solved, by: 0).map { meta, vcf, segments, purityploidy, _purity -> [meta, vcf, segments, purityploidy] }
         )
 
         PYCLONEVI_FIT(
-            PYCLONEVI_PREPARE.out.tsv
-                .filter { meta, tsv ->
-                    def has_mutations = tsv.countLines() > 1
-                    if (!has_mutations) {
-                        log.warn("Skipping PyClone-VI for ${meta.id}: no SNVs left on ASCAT copy number segments")
-                    }
-                    has_mutations
+            PYCLONEVI_PREPARE.out.tsv.filter { meta, tsv ->
+                def has_mutations = tsv.countLines() > 1
+                if (!has_mutations) {
+                    log.warn("Skipping PyClone-VI for ${meta.id}: no SNVs left on ASCAT copy number segments")
                 }
+                has_mutations
+            }
         )
     }
 
